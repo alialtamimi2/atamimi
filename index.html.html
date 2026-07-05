@@ -978,6 +978,62 @@ const PASS = "1234";
 let contributions = [];
 let users = [{name:'المدير', role:'مدير', status:'نشط'}];
 
+/* ═══════════ SUPABASE CLOUD STORAGE ═══════════ */
+const SUPABASE_URL = 'https://kufkcizezlyvkcdpafrq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_nTCT7xnTC0mLWZrXBdmGuQ_r1P7g2f9';
+const SB_HEADERS = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Content-Type': 'application/json',
+};
+let cloudOnline = false;
+
+// جلب كل المساهمات من السحابة
+async function cloudLoad() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/contributions?select=*&order=id.asc`, {
+    headers: SB_HEADERS,
+  });
+  if (!res.ok) throw new Error('load failed: ' + res.status);
+  const rows = await res.json();
+  // كل صف: {id, data, created_at} — ندمج id داخل بيانات المساهمة
+  return rows.map(r => ({ ...r.data, _id: r.id }));
+}
+
+// إضافة مساهمة جديدة للسحابة، تُعيد الـ id
+async function cloudInsert(contribData) {
+  const clean = { ...contribData };
+  delete clean._id;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/contributions`, {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    body: JSON.stringify({ data: clean }),
+  });
+  if (!res.ok) throw new Error('insert failed: ' + res.status);
+  const [row] = await res.json();
+  return row.id;
+}
+
+// تحديث مساهمة موجودة
+async function cloudUpdate(id, contribData) {
+  const clean = { ...contribData };
+  delete clean._id;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/contributions?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: SB_HEADERS,
+    body: JSON.stringify({ data: clean }),
+  });
+  if (!res.ok) throw new Error('update failed: ' + res.status);
+}
+
+// حذف مساهمة
+async function cloudDelete(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/contributions?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: SB_HEADERS,
+  });
+  if (!res.ok) throw new Error('delete failed: ' + res.status);
+}
+
 function toAr(n){ return String(n).replace(/\d/g, d=>'٠١٢٣٤٥٦٧٨٩'[d]); }
 
 /* ═══════════ LOGIN ═══════════ */
@@ -1001,18 +1057,50 @@ function doLogout() {
 }
 
 /* ═══════════ INIT ═══════════ */
-function initApp() {
+async function initApp() {
+  const tableBody = document.getElementById('contributions-table-body');
+  if (tableBody) tableBody.innerHTML = `<div class="empty-state"><div class="icon">☁️</div><p>جارٍ تحميل المساهمات من السحابة...</p></div>`;
+
   try {
-    const raw = localStorage.getItem('contributions_list');
-    contributions = raw ? JSON.parse(raw) : [];
-  } catch(e) { contributions = []; }
+    contributions = await cloudLoad();
+    cloudOnline = true;
+    // نسخة احتياطية محلية
+    try { localStorage.setItem('contributions_list', JSON.stringify(contributions)); } catch(e){}
+  } catch (e) {
+    // فشل الاتصال بالسحابة — نستخدم النسخة المحلية
+    cloudOnline = false;
+    try {
+      const raw = localStorage.getItem('contributions_list');
+      contributions = raw ? JSON.parse(raw) : [];
+    } catch(e2) { contributions = []; }
+    showToast('⚠️ تعذّر الاتصال بالسحابة — عرض النسخة المحلية');
+  }
+
+  updateCloudBadge();
   renderContributions();
   updateStats();
   renderProcessSteps();
   renderDecisionTrees();
 }
 
+function updateCloudBadge() {
+  const badge = document.getElementById('save-badge');
+  if (!badge) return;
+  if (cloudOnline) {
+    badge.textContent = '☁️ محفوظ سحابياً';
+    badge.style.color = 'var(--green)';
+    badge.style.background = 'var(--green-bg)';
+    badge.style.borderColor = '#bbf7d0';
+  } else {
+    badge.textContent = '⚠️ غير متصل';
+    badge.style.color = 'var(--orange)';
+    badge.style.background = 'var(--orange-bg)';
+    badge.style.borderColor = '#fde68a';
+  }
+}
+
 function persist() {
+  // نسخة احتياطية محلية دائماً
   try { localStorage.setItem('contributions_list', JSON.stringify(contributions)); } catch(e){}
 }
 
@@ -2083,7 +2171,7 @@ function resetFieldBranches() {
   });
 }
 
-function saveContribution() {
+async function saveContribution() {
   const name = document.getElementById('f-name').value;
   const owner = document.getElementById('f-owner').value;
   if (!name||!owner) { alert('يرجى إدخال اسم المساهمة وصاحبها على الأقل.'); return; }
@@ -2116,12 +2204,34 @@ function saveContribution() {
     orderDetail: getBranchSummary('promissory'),
     orderOther: document.getElementById('f-order-other')?.value?.trim() || '',
   };
-  contributions.push(c);
-  persist();
-  clearForm();
-  renderContributions();
-  updateStats();
-  switchTab('contributions', document.querySelectorAll('.tab-btn')[0]);
+
+  const saveBtn = document.querySelector('#tab-add .btn-save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'جارٍ الحفظ...'; }
+
+  try {
+    if (cloudOnline) {
+      const id = await cloudInsert(c);
+      c._id = id;
+    }
+    contributions.push(c);
+    persist();
+    clearForm();
+    renderContributions();
+    updateStats();
+    switchTab('contributions', document.querySelectorAll('.tab-btn')[0]);
+    showToast('✓ تم حفظ المساهمة' + (cloudOnline ? ' سحابياً' : ' محلياً'));
+  } catch (e) {
+    // فشل السحابة — احفظ محلياً على الأقل
+    contributions.push(c);
+    persist();
+    clearForm();
+    renderContributions();
+    updateStats();
+    switchTab('contributions', document.querySelectorAll('.tab-btn')[0]);
+    showToast('⚠️ حُفظت محلياً فقط — تعذّر الاتصال بالسحابة');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'حفظ المساهمة'; }
+  }
 }
 
 function clearForm() {
@@ -2355,15 +2465,23 @@ function viewDetail(i) {
 }
 function closeModal() { document.getElementById('detail-modal').classList.remove('open'); }
 
-function deleteContribution() {
+async function deleteContribution() {
   const c = contributions[currentDetailIndex];
   if (!confirm(`هل أنت متأكد من حذف مساهمة "${c.name}"؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
-  contributions.splice(currentDetailIndex, 1);
-  localStorage.setItem('contributions_list', JSON.stringify(contributions));
-  renderContributions();
-  updateStats();
-  closeModal();
-  showToast('🗑 تم حذف المساهمة');
+
+  try {
+    if (cloudOnline && c._id != null) {
+      await cloudDelete(c._id);
+    }
+    contributions.splice(currentDetailIndex, 1);
+    persist();
+    renderContributions();
+    updateStats();
+    closeModal();
+    showToast('🗑 تم حذف المساهمة' + (cloudOnline ? ' من السحابة' : ''));
+  } catch (e) {
+    showToast('⚠️ تعذّر حذف المساهمة من السحابة');
+  }
 }
 
 /* ═══════════ EDIT CONTRIBUTION ═══════════ */
@@ -2533,11 +2651,11 @@ function closeEditModal() {
   document.getElementById('detail-modal').classList.add('open');
 }
 
-function saveEdit() {
+async function saveEdit() {
   const c = contributions[editingIndex];
   const get = id => document.getElementById(id)?.value || '';
 
-  contributions[editingIndex] = {
+  const updated = {
     ...c,
     accounting:    get('e-accounting'),
     legal:         get('e-legal'),
@@ -2562,12 +2680,26 @@ function saveEdit() {
     subdivisionDetail: '',
   };
 
-  localStorage.setItem('contributions_list', JSON.stringify(contributions));
-  renderContributions();
-  updateStats();
-  closeEditModal();
-  viewDetail(editingIndex);
-  showToast('✓ تم حفظ التعديلات');
+  contributions[editingIndex] = updated;
+
+  try {
+    if (cloudOnline && updated._id != null) {
+      await cloudUpdate(updated._id, updated);
+    }
+    persist();
+    renderContributions();
+    updateStats();
+    closeEditModal();
+    viewDetail(editingIndex);
+    showToast('✓ تم حفظ التعديلات' + (cloudOnline ? ' سحابياً' : ''));
+  } catch (e) {
+    persist();
+    renderContributions();
+    updateStats();
+    closeEditModal();
+    viewDetail(editingIndex);
+    showToast('⚠️ حُفظت محلياً فقط — تعذّر تحديث السحابة');
+  }
 }
 
 function showToast(msg) {
