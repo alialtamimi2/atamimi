@@ -1,0 +1,2712 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة تحكم المساهمات العقارية</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f6f8; --white: #ffffff;
+    --border: #e4e7ed; --border2: #d0d5df;
+    --text: #1a1d23; --muted: #6b7280; --light: #9ca3af;
+    --accent: #1d4ed8; --accent-light: #eff4ff; --accent-mid: #bfcffe;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #d97706; --orange-bg: #fffbeb;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --gray-bg: #f9fafb;
+    --radius: 10px; --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+  }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    direction: rtl; background: var(--bg); color: var(--text);
+    min-height: 100vh; font-size: 14px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* LOGIN */
+  #login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; background:var(--bg); }
+  .login-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 44px 36px; width: 100%; max-width: 380px; text-align: center; box-shadow: var(--shadow-lg);
+  }
+  .login-emblem {
+    width: 56px; height: 56px; background: var(--accent); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px;
+  }
+  .login-card h1 { font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+  .login-card p { font-size: 13px; color: var(--muted); margin-bottom: 26px; }
+  .login-card input {
+    width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 12px 16px; font-family: inherit; font-size: 17px; text-align: center;
+    letter-spacing: 5px; outline: none; margin-bottom: 14px; background: var(--bg);
+    transition: border-color .15s;
+  }
+  .login-card input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%; background: var(--accent); border: none; border-radius: var(--radius);
+    padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 600; color: #fff; cursor: pointer;
+  }
+  .btn-primary:hover { background: #1e40af; }
+  .login-error { font-size: 12.5px; color: var(--red); margin-top: 10px; min-height: 16px; display:none; }
+
+  #app { display: none; }
+
+  .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .header-inner {
+    max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 58px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .header-title { font-size: 14.5px; font-weight: 700; }
+  .header-sub { font-size: 10.5px; color: var(--light); }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .save-badge { font-size: 10.5px; color: var(--green); background: var(--green-bg); border: 1px solid #bbf7d0; border-radius: 20px; padding: 3px 10px; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: inherit; font-size: 12.5px; color: var(--muted); cursor: pointer; transition: all .15s; }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+  .btn-ghost.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+  .tab-bar { background: var(--white); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-bar-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; display: flex; }
+  .tab-btn {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    padding: 13px 18px 12px; font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s;
+  }
+  .tab-btn.active { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 26px 24px; }
+  .intro-note { background: var(--accent-light); border: 1px solid #c7d8fc; border-radius: var(--radius); padding: 13px 16px; font-size: 12.5px; color: #1e3a8a; margin-bottom: 20px; line-height: 1.8; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; right:0; width:4px; height:100%; }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-value { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .stat-value.blue { color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-label { font-size: 11.5px; color: var(--muted); }
+
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .card-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13.5px; font-weight: 600; }
+  .btn-add { background: var(--accent); border: none; border-radius: var(--radius); padding: 8px 16px; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #fff; cursor: pointer; }
+  .btn-add:hover { background: #1e40af; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: right; padding: 10px 16px; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; background: var(--gray-bg); border-bottom: 1px solid var(--border); }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; transition: background .1s; }
+  tbody tr:hover td { background: var(--accent-light); }
+  .cell-name { font-weight: 600; }
+  .cell-muted { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-blue   { background: var(--accent-light); color: var(--accent); }
+  .badge-orange { background: var(--orange-bg);    color: var(--orange); }
+  .badge-green  { background: var(--green-bg);     color: var(--green); }
+  .badge-gray   { background: var(--gray-bg);      color: var(--muted); border: 1px solid var(--border); }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--light); }
+  .empty-state .icon { font-size: 34px; margin-bottom: 10px; opacity: .5; }
+  .empty-state p { font-size: 13px; }
+
+  .form-section-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 12px; padding-bottom: 7px; border-bottom: 2px solid var(--accent-light); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-bottom: 13px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .form-group input:not([type=hidden]), .form-group select, .form-group textarea { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 9px 12px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--white); outline: none; transition: border-color .15s, box-shadow .15s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,78,216,.1); }
+  .btn-save { background: var(--accent); border: none; border-radius: var(--radius); padding: 10px 24px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #fff; cursor: pointer; }
+  .btn-save:hover { background: #1e40af; }
+  .btn-cancel { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 10px 20px; font-family: inherit; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+  .btn-cancel:hover { border-color: var(--border2); color: var(--text); }
+
+  .process-list { display: flex; flex-direction: column; gap: 10px; }
+  .process-step { display: flex; align-items: flex-start; gap: 14px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); }
+  .step-num { width: 30px; height: 30px; min-width: 30px; background: var(--accent); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .step-body h4 { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+  .step-body p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .readonly-note { background: var(--orange-bg); border: 1px solid #fde68a; border-radius: var(--radius); padding: 12px 16px; font-size: 12px; color: #92400e; margin-bottom: 18px; line-height: 1.8; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,17,26,.45); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: modalUp .18s ease; }
+  @keyframes modalUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  .modal-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-size: 16px; font-weight: 700; }
+  .modal-close { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--muted); display:flex; align-items:center; justify-content:center; }
+  .modal-close:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--gray-bg); }
+
+  .inline-branch { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .inline-branch:empty { margin-top:0; }
+  .ib-step { background:var(--accent-light); border:1px solid #c7d8fc; border-radius:var(--radius); padding:12px 14px; animation:ibFadeIn .15s ease; }
+  @keyframes ibFadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+  .ib-question { font-size:13px; font-weight:700; color:#1e3a8a; margin-bottom:10px; }
+  .ib-options { display:flex; gap:8px; flex-wrap:wrap; }
+  .ib-opt { background:var(--white); border:1.5px solid var(--accent); color:var(--accent); border-radius:7px; padding:6px 16px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+  .ib-opt:hover { background:var(--accent); color:#fff; }
+  .ib-opt.selected { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 0 0 3px rgba(29,78,216,.18); pointer-events:none; }
+  .ib-opt.selected::after { content:' ✓'; font-size:11px; }
+  .ib-result { background:var(--green-bg); border:1px solid #bbf7d0; border-radius:var(--radius); padding:12px 14px; animation:ibFadeIn .15s ease; }
+  .ib-result-label { font-size:10.5px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+  .ib-result-text { font-size:13px; font-weight:600; color:#14532d; line-height:1.7; }
+
+  .mps-wrap { display:flex; flex-direction:column; gap:8px; }
+  .mps-row { display:flex; align-items:center; gap:8px; background:var(--gray-bg); border:1.5px solid var(--border); border-radius:var(--radius); padding:8px 12px; animation:ibFadeIn .15s ease; }
+  .mps-row select, .mps-row input { border:1.5px solid var(--border); border-radius:7px; padding:6px 10px; font-family:inherit; font-size:12.5px; color:var(--text); background:var(--white); outline:none; }
+  .mps-row select:focus, .mps-row input:focus { border-color:var(--accent); }
+  .mps-row select { flex:1.2; }
+  .mps-row input { flex:1; }
+  .mps-row .mps-pct { width:72px; flex:none; }
+  .mps-row .mps-remove { width:28px; height:28px; flex:none; background:transparent; border:1px solid var(--border); border-radius:7px; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .mps-row .mps-remove:hover { border-color:var(--red); color:var(--red); background:var(--red-bg); }
+  .mps-entry { display:flex; flex-direction:column; gap:0; }
+  .mps-branch-wrap { margin: 0 0 4px 0; }
+  .mps-branch-wrap:empty { display:none; }
+  .mps-add-btn { display:flex; align-items:center; gap:6px; background:transparent; border:1.5px dashed var(--accent-mid); border-radius:var(--radius); padding:8px 14px; cursor:pointer; font-family:inherit; font-size:12.5px; color:var(--accent); width:100%; justify-content:center; transition:all .15s; }
+  .mps-add-btn:hover { background:var(--accent-light); }
+  .mps-tag { display:inline-flex; align-items:center; gap:5px; background:var(--accent-light); color:var(--accent); border-radius:20px; padding:3px 10px; font-size:11.5px; font-weight:600; margin:2px; }
+  .mps-tag.cancelled-tag { background:var(--red-bg); color:var(--red); }
+
+  .process-tabs { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+  .process-tab-btn { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:7px 16px; font-family:inherit; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .15s; }
+  .process-tab-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .process-tab-btn:hover:not(.active) { border-color:var(--accent); color:var(--accent); }
+
+  .dtree-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:26px; }
+  .dtree { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; }
+  .dtree-head { display:flex; align-items:flex-start; gap:10px; }
+  .dtree-icon { font-size:20px; flex-shrink:0; line-height:1; }
+  .dtree-title { font-size:14px; font-weight:700; margin-bottom:2px; }
+  .dtree-desc { font-size:11.5px; color:var(--muted); line-height:1.6; }
+  .dtree-breadcrumb { font-size:11px; color:var(--muted); background:var(--gray-bg); border-radius:8px; padding:8px 12px; line-height:1.9; display:none; }
+  .dtree-breadcrumb.show { display:block; }
+  .dtree-crumb strong { color:var(--accent); }
+  .dtree-question-box { background:var(--accent-light); border:1px solid #c7d8fc; border-radius:var(--radius); padding:14px 16px; }
+  .dtree-question { font-size:13px; font-weight:700; color:#1e3a8a; margin-bottom:10px; }
+  .dtree-options { display:flex; gap:8px; flex-wrap:wrap; }
+  .dtree-opt { background:var(--white); border:1.5px solid var(--accent); color:var(--accent); border-radius:8px; padding:7px 18px; font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; }
+  .dtree-opt:hover { background:var(--accent); color:#fff; }
+  .dtree-result-box { background:var(--green-bg); border:1px solid #bbf7d0; border-radius:var(--radius); padding:14px 16px; display:none; }
+  .dtree-result-box.show { display:block; }
+  .dtree-result-label { font-size:10.5px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .dtree-result-text { font-size:13px; font-weight:600; color:#14532d; line-height:1.7; }
+  .dtree-controls { display:flex; gap:8px; }
+  .dtree-btn-back, .dtree-btn-reset { background:var(--white); border:1px solid var(--border); border-radius:7px; padding:5px 12px; font-family:inherit; font-size:11.5px; color:var(--muted); cursor:pointer; transition:all .15s; display:none; }
+  .dtree-btn-back.show, .dtree-btn-reset.show { display:inline-block; }
+  .dtree-btn-back:hover, .dtree-btn-reset:hover { border-color:var(--accent); color:var(--accent); }
+
+  .user-table-row { display:grid; grid-template-columns:1fr 1fr 90px 1fr; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+  .user-table-row:last-child { border-bottom:none; }
+
+  /* Name search */
+  #name-search-wrap { position:relative; }
+  #name-search-input { width:100%; border:1.5px solid var(--border); border-radius:var(--radius); padding:9px 12px; font-family:inherit; font-size:13px; color:var(--text); background:var(--white); outline:none; transition:border-color .15s; }
+  #name-search-input:focus { border-color:var(--accent); }
+  #name-dropdown { display:none; position:absolute; top:100%; right:0; left:0; background:var(--white); border:1.5px solid var(--accent); border-top:none; border-radius:0 0 var(--radius) var(--radius); max-height:220px; overflow-y:auto; z-index:50; box-shadow:0 4px 16px rgba(0,0,0,.1); }
+
+  /* Order other wrap */
+  #order-other-wrap input { width:100%; border:1.5px solid var(--border); border-radius:var(--radius); padding:9px 12px; font-family:inherit; font-size:13px; outline:none; }
+  #order-other-wrap input:focus { border-color:var(--accent); }
+
+  @media (max-width:768px) {
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .form-row { grid-template-columns:1fr; }
+    .header-sub { display:none; }
+    .page { padding:16px; }
+    .dtree-grid { grid-template-columns:1fr; }
+    .tab-bar-inner, .header-inner { padding:0 16px; }
+  }
+  @media (max-width:480px) { .stats-row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-emblem">🏢</div>
+    <h1>لوحة تحكم المساهمات العقارية</h1>
+    <p>أدخل رمزك</p>
+    <input type="password" id="pin-input" maxlength="6" placeholder="••••" />
+    <button class="btn-primary" onclick="doLogin()">دخول</button>
+    <div class="login-error" id="login-error">رمز الدخول غير صحيح، يرجى المحاولة مجدداً</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-icon">🏢</div>
+        <div>
+          <div class="header-title">لوحة تحكم المساهمات العقارية</div>
+          <div class="header-sub">المساهمات تُحفظ في هذا المتصفح وتظل محفوظة بعد الإغلاق</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="save-badge" id="save-badge">● محفوظ في هذا المتصفح</span>
+        <button class="btn-ghost" onclick="openUsersModal()">إدارة المستخدمين</button>
+        <button class="btn-ghost danger" onclick="doLogout()">تسجيل الخروج</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <div class="tab-bar-inner">
+      <button class="tab-btn active" onclick="switchTab('contributions',this)">المساهمات</button>
+      <button class="tab-btn" onclick="switchTab('add',this)">إدخال مساهمة</button>
+      <button class="tab-btn" onclick="switchTab('process',this)">المسار الإجرائي</button>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- TAB: المساهمات -->
+    <div class="tab-content active" id="tab-contributions">
+      <div class="intro-note">
+        أدخل المساهمات وبياناتها من القوائم المعتمدة، ويتولّى النظام توليد خطوات التنفيذ تلقائياً وفق المسار الإجرائي الثابت.
+      </div>
+      <div class="stats-row">
+        <div class="stat-card blue">
+          <div class="stat-value blue" id="stat-total">٠</div>
+          <div class="stat-label">إجمالي المساهمات</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-value green" id="stat-action">٠</div>
+          <div class="stat-label">إجراء فوري قابل للتنفيذ</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-value orange" id="stat-pending">٠</div>
+          <div class="stat-label">بند معلّق</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">قائمة المساهمات</span>
+          <button class="btn-add" onclick="switchTab('add', document.querySelectorAll('.tab-btn')[1])">+ إضافة مساهمة</button>
+        </div>
+        <div id="contributions-table-body"></div>
+      </div>
+    </div>
+
+    <!-- TAB: إدخال -->
+    <div class="tab-content" id="tab-add">
+      <div class="card" style="padding:26px 28px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">إدخال مساهمة جديدة</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:18px">أدخل المساهمات وبياناتها من القوائم المعتمدة، ويتولّى النظام توليد خطوات التنفيذ تلقائياً.</p>
+
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>اسم المساهمة *</label>
+            <select id="f-name" style="display:none" onchange="onNameChange(this.value)">
+              <option value="">— اختر المساهمة —</option>
+              <option>الحمودية</option>
+              <option>حي قرطبة</option>
+              <option>أرض المدينة</option>
+              <option>أرض بطريق الثمامة</option>
+              <option>شمال طريق خريص أرض بغلف</option>
+              <option>أرض المعارض القديمة</option>
+              <option>نيو جدة</option>
+              <option>أجياد المصافي</option>
+              <option>ارض شمال الرياض بلك 19</option>
+              <option>أرض الشرقية</option>
+              <option>ارض ابن عمار</option>
+              <option>جوهرة الرياض (لي مول)</option>
+              <option>جوهرة جدة</option>
+              <option>أحلى مول</option>
+              <option>أجياد 1</option>
+              <option>روابي أجياد 2</option>
+              <option>درة العزيزية</option>
+              <option>أرض الحسينية</option>
+              <option>برج المشاعر</option>
+              <option>مشروع أضواء العزيزية</option>
+              <option>أرض شمال المغرزات وغرب المطار الجنوبي</option>
+              <option>مخطط مربع 14</option>
+              <option>حي الملك عبدالعزيز (شمال المرسلات)</option>
+              <option>أرض الشرائع (اللهيب)</option>
+              <option>أرض بغرناطة الغربية</option>
+              <option>روضة العطيشان</option>
+              <option>عمارة المجد (شارع الخزان)</option>
+              <option>أرض طريق الخرج (البراكا)</option>
+              <option>مربعات صناعية الدمام</option>
+              <option>أرض التشليح</option>
+              <option>أبراج نوارة المدينة</option>
+              <option>واحة المنتجعات</option>
+              <option>أرض الدمام طريق ابوحدرية</option>
+              <option>أسواق التويجري</option>
+              <option>أرض المؤسسة</option>
+              <option>ارض مكة (الحمدان)</option>
+              <option>ارض جنوب المعارض (جرش)</option>
+              <option>أسواق السويداني</option>
+              <option>الحرة الشرقية</option>
+              <option>درة الخبر</option>
+              <option>فلل كورنيش الخبر</option>
+              <option>فلل درة الخبر</option>
+              <option>فلل الريان 1</option>
+              <option>فلل الريان (2)</option>
+              <option>فلل الحزام الذهبي</option>
+              <option>أبراج العليا بالخبر</option>
+              <option>أبراج الجلوية</option>
+              <option>دار مكة</option>
+              <option>صفا الجوف</option>
+              <option>مخطط اشبيليا</option>
+              <option>مخطط الربيع</option>
+              <option>أرض الحرم</option>
+              <option>أرض ينبع</option>
+              <option>شدا القنفذة</option>
+              <option>أرض الخبر</option>
+              <option>أم الرايات</option>
+              <option>جوهرة المقبل</option>
+              <option>أبو حدرية</option>
+              <option>الدمام 2</option>
+              <option>العزيزية 2</option>
+              <option>الدمام 1</option>
+              <option>جدة 4</option>
+              <option>جدة 3</option>
+              <option>الهيام 2</option>
+              <option>البساتين 2</option>
+              <option>مخطط أبحر</option>
+              <option>جواهر النمر</option>
+              <option>مخطط الرابية</option>
+              <option>أرض شمال العليا</option>
+              <option>مخطط المستقبل</option>
+              <option>فلل الجامعة</option>
+              <option>أرض غرب العريجاء</option>
+              <option>شمال غرب المطار الجديد</option>
+              <option>أرض الساحلية</option>
+              <option>مربع غرب التخصصي (الرمال)</option>
+              <option>أرض بالجوف</option>
+              <option>مشروع عمارة الرياض سنتر</option>
+              <option>مخطط الهدا</option>
+              <option>ظهرة العريجاء</option>
+              <option>مخطط أمواج</option>
+              <option>غرب جنوب المطار الجديد</option>
+              <option>جوهرة طيبة</option>
+              <option>اثراء مول</option>
+              <option>روضة أبحر</option>
+              <option>مخطط درة الشمال</option>
+              <option>أرض الصغير</option>
+              <option>حي بدر غرب طريق القصيم</option>
+              <option>شارع الحج</option>
+              <option>برج دار الفائزين السكني</option>
+              <option>اجياد 3</option>
+              <option>أرض طريق الخرج (الحمزة)</option>
+              <option>أرض طريق الخرج (اليحيى)</option>
+              <option>أرض بطريق بريمان</option>
+              <option>مخطط الخضراء بمكة المكرمة</option>
+              <option>الشهابية</option>
+              <option>أرض الحسينية</option>
+              <option>أرض الخرج</option>
+              <option>ارض مكة المسماه بارض الشلايخ</option>
+              <option>أرض الجوهرة بالعريجاء</option>
+              <option>مخطط الرحاب</option>
+              <option>ارض الأمير سعود بن ناصر</option>
+              <option>مشروع مبنى مكاتب (برج بكة)</option>
+              <option>أرض بريدة (النقع)</option>
+              <option>أرض الدرعية</option>
+              <option>أرض الشفاء</option>
+              <option>أرض بن حيان</option>
+              <option>أرض شمال شرق جدة</option>
+              <option>أرض الجنادرية</option>
+              <option>أرض الاميرة الجوهرة غرب العريجاء</option>
+              <option>جنوب بنبان</option>
+              <option>أرض الشرائع</option>
+              <option>أرض جدة</option>
+              <option>شمال السليمانية شرق المرسلات</option>
+              <option>حي السويدي الجنوبي</option>
+              <option>مشروع مدينة الجوهرة السياحية</option>
+              <option>فلل الشرق</option>
+              <option>مجمع المحبوب التجاري (ميدان الخميس)</option>
+              <option>شارع الظهران ارض الكسارة</option>
+              <option>ظهرة وادي لبن</option>
+              <option>مخطط شاطيء الرمال الذهبية</option>
+              <option>أرض العريجاء</option>
+              <option>جوهرة القديح</option>
+              <option>مخطط المحمدية</option>
+              <option>مخطط العارض 13</option>
+              <option>درة المدينة</option>
+              <option>درة الخليج</option>
+              <option>كنوز جدة</option>
+              <option>مخطط النورس</option>
+              <option>العليا تبوك</option>
+              <option>سلطانة البحر</option>
+              <option>رمادا بلازا</option>
+              <option>مربع رقم 7 الفيصلية</option>
+              <option>أرض التقنية</option>
+              <option>جوهرة الشرق</option>
+              <option>حي المهندسين بالدلم</option>
+              <option>المها</option>
+              <option>مخطط النخيل</option>
+              <option>ظلال جدة</option>
+              <option>بوابة الذهب</option>
+              <option>ربوع مكة</option>
+              <option>أرض البشرى</option>
+              <option>ارض شمال الرياض</option>
+              <option>أرض العويجا</option>
+              <option>أرض المنيرة</option>
+              <option>أرض العزيزية</option>
+              <option>المدينة سنتر</option>
+              <option>مركز الخبيب سنتر التجاري</option>
+              <option>جوهرة المطار (الغنامية)</option>
+              <option>تمور المملكة</option>
+              <option>أرض صلبوخ الحمدان</option>
+              <option>مشروع طريق خريص</option>
+              <option>ارض جنوب المطار</option>
+              <option>أرض الجوهرة بالعريجاء</option>
+              <option>جسر تاروت</option>
+              <option>أرض العقير</option>
+              <option>أرض تبوك</option>
+              <option>أرض الكورنيش الجنوبي</option>
+              <option>أرض الكورنيش الجنوبي (الدريبي)</option>
+              <option>مخطط الديوان 2 بالمنطقة الشرقية</option>
+              <option>أرض الشروق بالعقير</option>
+              <option>أرض مكة والطائف</option>
+              <option>ارض العيون</option>
+              <option>المليساء 3</option>
+              <option>طريق خريص كيلو 22</option>
+              <option>غرب طريق القصيم وجنوب طريق بنبان</option>
+              <option>شمال المغرزات</option>
+              <option>أرض العزيزية بمكة المكرمة</option>
+              <option>أبراج العزيزية بمكة الكرمة</option>
+              <option>حي المصطفى</option>
+              <option>مخطط الفيصلية</option>
+              <option>أرض الجامعة بابها</option>
+              <option>طريق خريص (الملاح)</option>
+              <option>أرض طريق الحجاز الجديد بالعريجاء</option>
+              <option>جاردن سيتي</option>
+              <option>المنيفية بالخبر</option>
+              <option>بدر 2030/أ و بدر 2030/ب</option>
+              <option>جنوب شرقي المؤطاء ببريدة</option>
+              <option>جنوب مطار الرياض</option>
+              <option>أرض الأمير نواف بن عبدالعزيز بالطائف</option>
+              <option>أرض الروضة شرق عنك</option>
+              <option>مخطط السهول</option>
+              <option>أرض معارض الشفاء على طريق الحجاز (الجبرين)</option>
+              <option>ارض بيت الطبيشي</option>
+              <option>ارض بنبان (الجرمان)</option>
+              <option>مشروع سوق جدة</option>
+              <option>أرض الواقعة جنوب المعارض بخريص</option>
+              <option>أرض جنوب جدة</option>
+              <option>سوق العتيبية</option>
+              <option>شمال الرياض</option>
+              <option>شرق بريدة (الحمزة)</option>
+              <option>ارض غرب العريجا</option>
+              <option>ارض شارع عسير</option>
+              <option>جنوب وشمال المعارض بطريق خريص</option>
+              <option>رقم 5 بطريق خريص شرق منطقة النسيم</option>
+              <option>رقم 20 بطريق خريص شرق مشروع فلل بغلف</option>
+              <option>الشبيلي بورت</option>
+              <option>أرض القطيف</option>
+              <option>أرض المعارض الجديدة مخطط رقم 2861</option>
+              <option>أرض طريق خريص غرب معارض السيارات رقم 19</option>
+              <option>الأرض الواقعة قرب المصفاة</option>
+              <option>الأرض الواقعة جنوب المطار الجديد قطعة رقم 46</option>
+              <option>ارض امتداد التخصصي</option>
+              <option>شمال شرق أم الحمام</option>
+              <option>أرض طريق صلبوخ شمال كبري العمارية (أرض المستودعات)</option>
+              <option>ارض الطالعية الواقعة في البطالية</option>
+              <option>ارض البطحاء قريش بمكة المكرمة</option>
+              <option>استراحات الزيتون ببريدة</option>
+              <option>ارض الشوقية بمكة المكرمة</option>
+              <option>طريق الخرج كيلو (30)</option>
+              <option>ارض شاطئ نصف القمر</option>
+              <option>الفاقعة شمال الرياض</option>
+              <option>الأرض الواقعة على طريق صلبوخ شرق الاسفلت كيلو 11 و 12</option>
+              <option>ارض العريجاء</option>
+              <option>ارض الخرج</option>
+              <option>مخطط المجد ق/ر/23</option>
+              <option>مساهمة الصفا بصفوى</option>
+              <option>جنوب غرب المطار الجديد</option>
+              <option>الأرض الواقعة بجهاد</option>
+              <option>هجر</option>
+              <option>ارض جبل الكعبة في مكة</option>
+              <option>جوهرة الخليج</option>
+              <option>الخزامى</option>
+              <option>العليا على الزفلت الشارع الرئيسي</option>
+              <option>مساهمة نماء</option>
+              <option>شرائع المجاهدين</option>
+              <option>أبراج البركة</option>
+              <option>مخطط قيران مربع 11 و 12</option>
+              <option>طريق القصيم مربع 11 و 12</option>
+              <option>شمال الرياض جنوب بنبان مربع 11 و 12</option>
+              <option>روضة صفوى</option>
+            </select>
+            <!-- Search widget replaces the native select -->
+            <div style="position:relative" id="name-search-wrap">
+              <input
+                type="text"
+                id="name-search-input"
+                placeholder="🔍 ابحث عن اسم المساهمة..."
+                autocomplete="off"
+                oninput="filterNameOptions(this.value)"
+                onfocus="showNameDropdown()"
+                style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--white);outline:none;"
+              />
+              <div id="name-dropdown" style="
+                display:none;
+                position:absolute;
+                top:100%;right:0;left:0;
+                background:var(--white);
+                border:1.5px solid var(--accent);
+                border-top:none;
+                border-radius:0 0 var(--radius) var(--radius);
+                max-height:220px;
+                overflow-y:auto;
+                z-index:50;
+                box-shadow:0 4px 16px rgba(0,0,0,.1);
+              "></div>
+            </div>
+          </div>
+          <div class="form-group"><label>صاحب المساهمة</label><input id="f-owner" readonly style="background:var(--gray-bg);color:var(--muted);cursor:default;" placeholder="يُعبَّأ تلقائياً عند اختيار المساهمة" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>التقرير المحاسبي (أو تقرير الحصر)</label>
+            <select id="f-accounting"><option value="">— اختر —</option><option>متوفر</option><option>قيد الإعداد</option><option>غير متوفر</option></select>
+          </div>
+          <div class="form-group"><label>المستشار القانوني</label><select id="f-legal">
+              <option value="">— اختر —</option>
+              <option>علي التميمي</option>
+          <option>فهد الخميش</option>
+          <option>إبراهيم العريفي</option>
+          <option>سوسن القاضي</option>
+          <option>إبراهيم الراجحي</option>
+            </select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>الجهة المسؤولة عن المرحلة الحالية</label>
+            <select id="f-responsible">
+              <option value="">— اختر —</option>
+              <option>مساهمات مهيأة للإفراغ</option>
+              <option>جهات أخرى "هيئة عقارات الدولة"</option>
+              <option>وزارة البلديات و الإسكان</option>
+              <option>مساهمات مهيأة للبيع</option>
+              <option>النظر القضائي</option>
+              <option>تحت إجراءات الإلزام</option>
+              <option>وكالة التوثيق (الوكالة – كتابات العدل – إجراءات تحديث أو استخراج الصكوك)</option>
+              <option>فريق العمل الدائم لمعالجة الصكوك الموقوفة والملغاة</option>
+              <option>الديوان الملكي</option>
+              <option>منصة إحكام</option>
+              <option>تمت التصفية والمساهمة تحت إجراء الصرف</option>
+              <option>جهات أخرى "الهيئة الملكية لمدينة الرياض ،وأمانة الرياض، ووزارة الرياضة"</option>
+              <option>جهات أخرى "إيقاف شمال الرياض"</option>
+              <option>جهات أخرى (بنك الراجحي)</option>
+              <option>تحت التهيئة</option>
+              <option>تحت إجراءات إعداد التقارير المحاسبية</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>هل يوجد عقار</label>
+            <select id="f-has-property" onchange="onHasPropertyChange(this.value)"><option value="">— اختر —</option><option>نعم</option><option>لا</option></select>
+          </div>
+          <div class="form-group" id="group-property-status" style="grid-column:1/-1">
+            <label>حالة العقار <span style="font-size:10.5px;color:var(--muted);font-weight:400">(يمكن إضافة أكثر من حالة)</span></label>
+            <!-- hidden field to store serialized value for save -->
+            <input type="hidden" id="f-property-status" />
+            <div class="mps-wrap" id="mps-wrap"></div>
+            <button type="button" class="mps-add-btn" onclick="addPropertyStatus()">+ إضافة حالة للعقار</button>
+          </div>
+        </div>
+        <div class="form-row" id="group-ownership-row" style="display:none">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>ملكية الأرض</label>
+            <select id="f-ownership" onchange="onOwnershipChange(this.value)"><option value="">— اختر —</option><option>كاملة</option><option>مشاع</option><option>متنازع عليها</option></select>
+            <div class="inline-branch" id="branch-subdivision"></div>
+          </div>
+        </div>
+
+        <div id="property-dependent-section">
+
+        <div class="form-section-title">بيانات العقار</div>
+
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل يوجد رفع مساحي</label>
+            <select id="f-survey" onchange="onSurveyChange(this.value)">
+              <option value="">— اختر —</option>
+              <option>نعم</option>
+              <option>لا</option>
+            </select>
+            <div class="inline-branch" id="branch-survey"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل توجد تعديات</label>
+            <select id="f-encroach" onchange="onFieldChange('encroachment', this.value)"><option value="">— اختر —</option><option>نعم</option><option>لا</option></select>
+            <div class="inline-branch" id="branch-encroachment"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل يوجد تداخل على الأرض</label>
+            <select id="f-overlap" onchange="onFieldChange('overlap', this.value)"><option value="">— اختر —</option><option>نعم</option><option>لا</option></select>
+            <div class="inline-branch" id="branch-overlap"></div>
+          </div>
+          <div class="form-group"><label>موافقة وزارة الطاقة</label>
+            <select id="f-utility"><option value="">— اختر —</option><option>معتمدة</option><option>قيد الاعتماد</option><option>لم تُقدَّم</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>هل تحتاج الوثيقة إلى تحديث</label>
+            <select id="f-doc-update" onchange="onDocUpdateChange(this.value)"><option value="">— اختر —</option><option>نعم</option><option>لا</option></select>
+          </div>
+          <div class="form-group" id="group-update-barrier">
+            <label>عائق التحديث</label>
+            <select id="f-update-barrier">
+              <option value="">— اختر —</option>
+              <option>جارى العمل على الرفع عن طريق منصة بلدي عن طريق المصفي والمتابعة معه</option>
+              <option>جاري المتابعة مع المصفي لتعين مكتب هندسي لاستكمال اجراءات الفرز والتحديث حيث أن المساهمة عبارة عن عمارة قديمة</option>
+              <option>تحت الدراسة</option>
+              <option>عدم استكمال هويات الملاك، وادعاء تملك المساهمة اكثر من النسبة المدرجة بالصك</option>
+              <option>الصك لم يستكمل المتطلبات النظامية</option>
+              <option>بعض قطع الصك لم تصدر لها صكوك مستقلة</option>
+              <option>إحكام</option>
+              <option>ملغى ويدرس لدى الفريق</option>
+              <option>الصك ملغى</option>
+              <option>مباع</option>
+              <option>يحتاج إلى تحديد القطع المتبقية في الصك</option>
+              <option>ضمن منطقة الايقاف</option>
+              <option>وجود تداخل وتم رفع دعوى قضائية ولم يتم الانتهاء حتى الان</option>
+              <option>لابد من استكمال متطلبات الصك والتخطيط</option>
+              <option>منصة إحكام</option>
+              <option>لم يتم التحديث من قبل وكالة التوثيق</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل الأرض بحاجة إلى تخطيط</label>
+            <select id="f-planning" onchange="onPlanningChange(this.value)">
+              <option value="">— اختر —</option>
+              <option>نعم</option>
+              <option>لا</option>
+            </select>
+            <div class="inline-branch" id="branch-planning"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل يوجد رهن على الأصل</label>
+            <select id="f-mortgage" onchange="onFieldChange('mortgage', this.value)"><option value="">— اختر —</option><option>نعم</option><option>لا</option></select>
+            <div class="inline-branch" id="branch-mortgage"></div>
+          </div>
+        </div>
+
+        </div><!-- /property-dependent-section -->
+
+        <div class="form-section-title">الالتزامات والنزاعات</div>
+
+
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل توجد دعوى على المساهمة</label>
+            <select id="f-lawsuit" onchange="onLawsuitChange(this.value)">
+              <option value="">— اختر —</option>
+              <option>نعم</option>
+              <option>لا</option>
+            </select>
+            <div class="inline-branch" id="branch-lawsuit"></div>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>هل يوجد سند لأمر</label>
+            <select id="f-order" onchange="onOrderChange(this.value)">
+              <option value="">— اختر —</option>
+              <option>نعم</option>
+              <option>لا</option>
+            </select>
+            <div class="inline-branch" id="branch-promissory"></div>
+            <div id="order-other-wrap" style="display:none;margin-top:8px">
+              <input id="f-order-other" placeholder="اذكر الحالة الأخرى هنا..." style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:inherit;font-size:13px;outline:none;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+          <button class="btn-save" onclick="saveContribution()">حفظ المساهمة</button>
+          <button class="btn-cancel" onclick="clearForm()">إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: المسار الإجرائي -->
+    <div class="tab-content" id="tab-process">
+      <div class="process-tabs">
+        <button class="process-tab-btn active" onclick="switchProcessSubTab('main',this)">المسار الرئيسي</button>
+        <button class="process-tab-btn" onclick="switchProcessSubTab('sub',this)">المسارات الفرعية</button>
+      </div>
+
+      <div id="process-main">
+        <div class="readonly-note">
+          <strong>مسار معتمد للقراءة فقط.</strong> هذه الخطوات مرجع النظام في توليد إجراءات كل مساهمة تلقائياً، ولا يمكن تعديلها أو حذفها من لوحة التحكم.
+        </div>
+        <div class="process-list" id="process-steps"></div>
+      </div>
+
+      <div id="process-sub" style="display:none">
+        <div class="readonly-note">
+          <strong>مسارات فرعية تفاعلية.</strong> اختر الإجابة المناسبة لكل سؤال وستظهر لك الخطوة التالية والإجراء المطلوب تلقائياً.
+        </div>
+        <div class="dtree-grid" id="dtree-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modal-title">تفاصيل المساهمة</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="modal-content"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">إغلاق</button>
+      <button class="btn-cancel" onclick="deleteContribution()" style="border-color:var(--red);color:var(--red)" onmouseover="this.style.background='var(--red-bg)'" onmouseout="this.style.background=''">🗑 حذف</button>
+      <button class="btn-save" onclick="openEditModal()" style="background:var(--green,#16a34a)">✏️ تعديل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <h3 id="edit-modal-title">تعديل المساهمة</h3>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body" id="edit-modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeEditModal()">إلغاء</button>
+      <button class="btn-save" onclick="saveEdit()">حفظ التعديلات</button>
+    </div>
+  </div>
+</div>
+
+<!-- Users Modal -->
+<div class="modal-overlay" id="users-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><h3>إدارة المستخدمين</h3><button class="modal-close" onclick="closeUsersModal()">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8">
+        الدخول بالرمز فقط. كل موظف يبدأ بـ«رمز أوّلي» يبدّله برمزه الشخصي أول دخول، ولا يطّلع عليه أحد بعد ذلك. «إعادة تعيين» تُرجِعه للرمز الأوّلي.
+      </p>
+      <div id="users-list"></div>
+      <button class="btn-add" style="margin-top:10px" onclick="addUser()">+ إضافة موظف</button>
+    </div>
+    <div class="modal-foot"><button class="btn-cancel" onclick="closeUsersModal()">إغلاق</button></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ DATA ═══════════ */
+const PROCESS_STEPS = [
+  { title: "تسجيل البيانات الأولية", desc: "استلام ملف المساهمة، التحقق من هوية صاحبها وصلاحيته القانونية، وتسجيلها بالنظام مع إسناد رقم لها." },
+  { title: "الفحص والتدقيق", desc: "مراجعة التقرير المحاسبي، التحقق من ملكية الأرض والعقار، الرفع المساحي، والكشف عن التعديات أو التداخلات." },
+  { title: "المعالجة الإجرائية", desc: "تحديث الوثائق الرسمية، الحصول على الموافقات الفنية، ومعالجة الرهون والنزاعات القانونية." },
+  { title: "التهيئة للبيع أو الإفراغ", desc: "استيفاء متطلبات التخطيط والموافقات النهائية تمهيداً للبيع أو الإفراغ للمستحقين." },
+  { title: "التصفية والصرف", desc: "إعداد التقرير المحاسبي الختامي، اعتماد الصرف، وإغلاق ملف المساهمة." },
+];
+
+const DECISION_TREES = {
+  planning: {
+    title: "مسار التخطيط", icon: "📏", desc: "تحديد الإجراء المطلوب للتخطيط",
+    root: {
+      q: "هل تمت أخذ موافقة صاحب الصلاحية (مجلس الإدارة) على التخطيط؟",
+      yes: { result: "يتم استكمال الإجراءات النظامية للتخطيط" },
+      no:  { result: "يتم رفع الدراسة لصاحب الصلاحية للموافقة على التخطيط" },
+    }
+  },
+
+  survey: { title:"المسار المساحي", icon:"📐", desc:"وجود عقار غير مباع وغير منزوع يستوجب الرفع المساحي",
+    root: { result: "وجود عقار غير مباع وغير منزوع يستوجب الرفع المساحي فوراً" } },
+
+  encroachment: { title:"مسار التعديات", icon:"🚧", desc:"تحديد إجراء معالجة التعديات على الأرض",
+    root: { q:"هل يوجد تعدٍ؟",
+      no: { result:"لا يوجد إجراء مطلوب — لا تعديات على الأرض" },
+      yes: { q:"ما نوع التعدي؟",
+        branches: {
+          "عام": { result:"مخاطبة إمارة المنطقة" },
+          "خاص": { q:"هل يوجد معلومات عن المعتدين؟",
+            yes:{ result:"استكمال رفع الدعوى على المعتدين" },
+            no:{ result:"مخاطبة الجهة المختصة" } }
+        } } } },
+
+  overlap: { title:"مسار التداخل", icon:"🗺️", desc:"تحديد إجراء معالجة التداخل على الأرض",
+    root: { q:"هل يوجد رفع مساحي؟",
+      no:{ result:"العمل على إعداد رفع مساحي" },
+      yes:{ q:"هل رُفع التقرير المساحي للجهة المختصة؟",
+        no:{ result:"يُستكمل الرفع للجهة المختصة" },
+        yes:{ q:"هل وردت الإفادة بالتداخل؟",
+          no:{ result:"المتابعة مع الجهة" },
+          yes:{ q:"هل أُضيفت أجزاء التداخل في التقرير؟",
+            no:{ result:"استكمال تحديث التقرير وبيان الجزء المتداخل" },
+            yes:{ q:"هل تتوفر بيانات المتداخل؟",
+              no:{ result:"تُطلب بيانات المتداخل من الجهة المختصة" },
+              yes:{ result:"رفع دعوى قضائية" } } } } } } },
+
+  mortgage: { title:"مسار الرهن", icon:"🔒", desc:"تحديد إجراء معالجة الرهن على العقار",
+    root: { q:"هل يوجد رهن؟",
+      no:{ result:"لا يوجد إجراء مطلوب — لا رهن على الأصل" },
+      yes:{ q:"الرهن جزئي أو كامل العقار؟",
+        branches:{
+          "جزئي":{ result:"يُستكمل البيع في الجزء غير المرهون" },
+          "كامل":{ q:"هل القيمة التقديرية للعقار تغطي مبلغ الرهن؟",
+            no:{ result:"يُستكمل رفع الدراسة لمعالجة الرهن" },
+            yes:{ q:"هل مبلغ الرهن يؤثر على حقوق المساهمين؟",
+              yes:{ result:"يُستكمل رفع الدراسة لمعالجة الرهن" },
+              no:{ q:"هل خُوطبت الجهة الراهنة لفك الرهن؟",
+                no:{ result:"تتم مخاطبة الجهة الراهنة" },
+                yes:{ q:"هل تم التوصل إلى اتفاق؟",
+                  yes:{ result:"العمل على توقيع اتفاقية" },
+                  no:{ result:"رفع دعوى لفك الرهن وبيع العقار" } } } } } } } } },
+
+  approval: { title:"مسار موافقة الجهة", icon:"✅", desc:"متطلبات الحصول على موافقة الجهة المختصة",
+    root: { result: "عدم وجود الموافقة للعقار غير المنزوع أو المباع يستلزم أخذ الموافقة فوراً" } },
+
+  planning: {
+    title: "مسار التخطيط", icon: "📏", desc: "تحديد الإجراء المطلوب للتخطيط",
+    root: {
+      q: "هل تمت أخذ موافقة صاحب الصلاحية (مجلس الإدارة) على التخطيط؟",
+      yes: { result: "يتم استكمال الإجراءات النظامية للتخطيط" },
+      no:  { result: "يتم رفع الدراسة لصاحب الصلاحية للموافقة على التخطيط" },
+    }
+  },
+
+  survey: {
+    title: "مسار الرفع المساحي", icon: "📐", desc: "التحقق من اعتماد الرفع المساحي",
+    root: {
+      q: "هل الرفع المساحي معتمد من منصة بلدي؟",
+      yes: { result: "الرفع المساحي معتمد من منصة بلدي ✓" },
+      no:  { result: "استكمال اعتماد الرفع المساحي على منصة بلدي" },
+      branches: {
+        "نعم": { result: "الرفع المساحي معتمد من منصة بلدي ✓" },
+        "لا":  { result: "استكمال اعتماد الرفع المساحي على منصة بلدي" },
+        "لا حاجة لاعتماده": { result: "لا حاجة لاعتماد الرفع المساحي على منصة بلدي" },
+      }
+    }
+  },
+
+  lawsuit: {
+    title: "مسار الدعوى القضائية", icon: "⚖️", desc: "تفاصيل الدعوى القضائية",
+    root: {
+      q: "ما طرف الدعوى؟",
+      branches: {
+        "دعوى من مساهم على المساهمة":       { q: "ما موضوع الدعوى؟", branches: {
+          "استرداد حصة / مطالبة مالية":    { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "متابعة استكمال متطلبات رفع الدعوى" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى أمام القضاء العام" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي وتحديد موقف المساهمة" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "المباشرة بتنفيذ الحكم النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية مع المستشار القانوني" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "متابعة استكمال متطلبات رفع الدعوى أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى أمام القضاء الإداري" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري وتحديد موقف المساهمة" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "المباشرة بتنفيذ الحكم الإداري النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية مع المستشار القانوني" } } } } },
+          "نزاع على الملكية أو الصك":       { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "متابعة استكمال متطلبات رفع الدعوى" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى النزاع على الملكية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم وتحديث الصك" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات الرفع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "إلغاء عقد أو اتفاقية":          { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع دعوى الإلغاء" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى إلغاء العقد" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ حكم إلغاء العقد" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات الرفع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "تعويض عن ضرر":                  { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع دعوى التعويض" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى التعويض" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف من التعويض" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ حكم التعويض" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو سداد التعويض المحكوم به" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال المتطلبات أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية للتعويض" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري للتعويض" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو سداد التعويض" } } } } },
+          "اعتراض على قرار إداري":          { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع الاعتراض" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى الاعتراض الإداري" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم وإلغاء القرار الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو القبول بالقرار الإداري" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات الاعتراض أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الاعتراض الإداري" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف أمام المحكمة الإدارية العليا" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري النهائي وإلغاء القرار" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أمام المحكمة الإدارية العليا" } } } } },
+          "موضوع آخر":                      { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع الدعوى" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى مع المستشار القانوني" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "المباشرة بتنفيذ الحكم النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات الرفع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+        } },
+        "دعوى من المساهمة على طرف خارجي": { q: "ما موضوع الدعوى؟", branches: {
+          "استرداد حصة / مطالبة مالية":    { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع الدعوى" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات الرفع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "نزاع على الملكية أو الصك":       { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع دعوى النزاع" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى النزاع على الملكية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم وتحديث الصك" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال المتطلبات أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم وتحديث الصك" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "تعويض عن ضرر":                  { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع دعوى التعويض" }, "مرفوعة وقيد النظر": { result: "متابعة سير دعوى التعويض" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ حكم التعويض" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال المتطلبات أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ حكم التعويض الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو سداد التعويض" } } } } },
+          "موضوع آخر":                      { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال متطلبات رفع الدعوى" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى مع المستشار القانوني" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم النهائي" }, "حكم نهائي ضد المساهمة": { result: "دراسة الاستئناف أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "استكمال المتطلبات أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تنفيذ الحكم الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+        } },
+        "دعوى من طرف خارجي على المساهمة": { q: "ما موضوع الدعوى؟", branches: {
+          "استرداد حصة / مطالبة مالية":    { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "الاستعداد للرد على الدعوى والتنسيق مع المستشار القانوني" }, "مرفوعة وقيد النظر": { result: "متابعة الرد على الدعوى مع المستشار القانوني" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد موقف الدفاع" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "الحكم لصالح المساهمة — لا إجراء مطلوب" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية وسداد المحكوم به" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "الاستعداد للرد أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الرد على الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "الحكم الإداري لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "نزاع على الملكية أو الصك":       { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "إعداد مستندات الدفاع عن الملكية" }, "مرفوعة وقيد النظر": { result: "متابعة الدفاع عن الملكية أمام القضاء" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد موقف المساهمة" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "تأكيد الملكية وتحديث الصك" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو مراجعة وضع الصك" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "إعداد مستندات الدفاع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الدفاع أمام القضاء الإداري" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تأكيد الملكية بموجب الحكم الإداري" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو مراجعة الوضع" } } } } },
+          "موضوع آخر":                      { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "الاستعداد للرد مع المستشار القانوني" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى والرد عليها" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد موقف الدفاع" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "الحكم لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "الاستعداد للرد أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الرد على الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "الحكم الإداري لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+        } },
+        "دعوى من صاحب المساهمة":           { q: "ما موضوع الدعوى؟", branches: {
+          "استرداد حصة / مطالبة مالية":    { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة المطالبة والتنسيق مع المستشار القانوني" }, "مرفوعة وقيد النظر": { result: "متابعة الرد على دعوى صاحب المساهمة" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد موقف المساهمة" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "الحكم لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية مع صاحب المساهمة" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة المطالبة أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الدعوى الإدارية لصاحب المساهمة" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "الحكم الإداري لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+          "نزاع على الملكية أو الصك":       { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة الوضع والتنسيق مع المستشار القانوني" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى والدفاع عن الصك" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "الحكم لصالح المساهمة وتأكيد الصك" }, "حكم نهائي ضد المساهمة": { result: "مراجعة وضع الصك ودراسة الطعن" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة الوضع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الدعوى الإدارية" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "تأكيد الصك بموجب الحكم الإداري" }, "حكم نهائي ضد المساهمة": { result: "مراجعة الوضع ودراسة الطعن" } } } } },
+          "موضوع آخر":                      { q: "لدى أي جهة قضائية؟", branches: { "القضاء العام": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة موضوع الدعوى والتنسيق مع المستشار القانوني" }, "مرفوعة وقيد النظر": { result: "متابعة سير الدعوى مع المستشار القانوني" }, "صدر حكم ابتدائي": { result: "دراسة الحكم وتحديد الموقف" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف مع المستشار القانوني" }, "حكم نهائي لصالح المساهمة": { result: "الحكم لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } }, "القضاء الإداري": { q: "ما مرحلة الدعوى؟", branches: { "قيد التحضير (لم تُرفع بعد)": { result: "دراسة الموضوع أمام القضاء الإداري" }, "مرفوعة وقيد النظر": { result: "متابعة الدعوى الإدارية مع المستشار القانوني" }, "صدر حكم ابتدائي": { result: "دراسة الحكم الابتدائي الإداري" }, "في مرحلة الاستئناف": { result: "متابعة الاستئناف الإداري" }, "حكم نهائي لصالح المساهمة": { result: "الحكم الإداري لصالح المساهمة — لا إجراء" }, "حكم نهائي ضد المساهمة": { result: "دراسة الطعن أو التسوية" } } } } },
+        } },
+      }
+    }
+  },
+
+  promissory: {
+    title: "مسار سند الأمر", icon: "📋", desc: "تحديد الإجراء المطلوب لمعالجة سند الأمر",
+    root: {
+      q: "هل يمكن إصدار قرار من مجلس الإدارة بالإلزام بدلاً من سند الأمر؟",
+      yes: { result: "ترفع الدراسة فوراً لإصدار قرار مجلس الإدارة بالإلزام" },
+      no: {
+        q: "ما نوع السند الأمر؟",
+        branches: {
+          "سند لأمر مقدم من مشتري": { result: "استكمال إجراءات سند الأمر المقدم من المشتري ومتابعة التنفيذ" },
+          "سند لأمر مقدم من كفيل صاحب المساهمة": { result: "استكمال إجراءات سند الأمر المقدم من كفيل صاحب المساهمة ومتابعة التنفيذ" },
+          "حالة أخرى": { result: "__OTHER__" },
+        }
+      }
+    }
+  },
+
+  cancelled: {
+    title: "مسار الصك الملغى", icon: "🚫", desc: "تحديد الإجراء المطلوب للصك الملغى",
+    root: {
+      q: "هل أُحيل الصك إلى فريق العمل؟",
+      no:  { result: "دراسة إحالة الصك إلى فريق العمل الدائم لمعالجة الصكوك الموقوفة والملغاة" },
+      yes: {
+        q: "هل صدرت التوصية من الفريق بالإلغاء وتمت الموافقة عليها من المقام الكريم؟",
+        yes: { result: "متابعة تنفيذ الأمر الملكي الصادر بالموافقة على الإلغاء وما تضمنه من معالجات" },
+        no:  { result: "متابعة ما يصدر من قبل فريق العمل" },
+      }
+    }
+  },
+
+  subdivision: { title:"مسار الفرز", icon:"✂️", desc:"تحديد إجراء فرز العقار وبيعه",
+    root: { q:"هل يمكن أخذ موافقة الشركاء على البيع؟",
+      yes:{ result:"يُباع بعد أخذ الموافقة" },
+      no:{ q:"هل يمكن الفرز نظاماً؟",
+        no:{ result:"استكمال متطلبات رفع الدعوى للبيع الجبري" },
+        yes:{ q:"هل وافق الشركاء على الفرز؟",
+          no:{ result:"استكمال متطلبات رفع الدعوى للبيع الجبري" },
+          yes:{ result:"يتم البدء بإجراءات الفرز" } } } } },
+};
+
+/* ═══════════ STATE ═══════════ */
+const PASS = "1234";
+let contributions = [];
+let users = [{name:'المدير', role:'مدير', status:'نشط'}];
+
+function toAr(n){ return String(n).replace(/\d/g, d=>'٠١٢٣٤٥٦٧٨٩'[d]); }
+
+/* ═══════════ LOGIN ═══════════ */
+function doLogin() {
+  const v = document.getElementById('pin-input').value;
+  if (v === PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    setTimeout(()=>document.getElementById('login-error').style.display='none', 2500);
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pin-input').value = '';
+}
+
+/* ═══════════ INIT ═══════════ */
+function initApp() {
+  try {
+    const raw = localStorage.getItem('contributions_list');
+    contributions = raw ? JSON.parse(raw) : [];
+  } catch(e) { contributions = []; }
+  renderContributions();
+  updateStats();
+  renderProcessSteps();
+  renderDecisionTrees();
+}
+
+function persist() {
+  try { localStorage.setItem('contributions_list', JSON.stringify(contributions)); } catch(e){}
+}
+
+/* ═══════════ STATS & TABLE ═══════════ */
+function updateStats() {
+  document.getElementById('stat-total').textContent = toAr(contributions.length);
+  const actionable = contributions.filter(c => { const ph=extractRequiredActions(c); return ph.reduce((s,p)=>s+p.items.length,0)===0; }).length;
+  document.getElementById('stat-action').textContent = toAr(actionable);
+  document.getElementById('stat-pending').textContent = toAr(contributions.length - actionable);
+}
+
+function renderContributions() {
+  const el = document.getElementById('contributions-table-body');
+  if (!contributions.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>لا توجد مساهمات بعد — أضف أول مساهمة من تبويب "إدخال مساهمة"</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>اسم المساهمة</th><th>صاحب المساهمة</th><th>ملكية الأرض</th><th>الحالة</th></tr></thead>
+      <tbody>
+        ${contributions.map((c,i)=>{
+          const _ph = extractRequiredActions(c); const actionsCount = _ph.reduce((s,p)=>s+p.items.length,0);
+          const statusBadge = actionsCount === 0
+            ? '<span class="badge badge-green">قابل للتنفيذ</span>'
+            : `<span class="badge badge-orange">${toAr(actionsCount)} إجراء معلّق</span>`;
+          return `<tr onclick="viewDetail(${i})">
+            <td class="cell-muted">${toAr(i+1)}</td>
+            <td class="cell-name">${c.name}</td>
+            <td class="cell-muted">${c.owner}</td>
+            <td>${c.ownership?`<span class="badge badge-blue">${c.ownership}</span>`:'—'}</td>
+            <td>${statusBadge}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* ═══════════ FORM ═══════════ */
+const CONTRIBUTIONS_DB = [
+  ["الحمودية", "شركة الحمود والعلي"],
+  ["حي قرطبة", "مؤسسة محمد موسى العليان العقارية"],
+  ["أرض المدينة", "شركة الرياض الدولية للتطوير والاستثمار العقاري - هلال عبدالرحمن الهلال- عبدالرحمن الحسيني"],
+  ["أرض بطريق الثمامة", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["شمال طريق خريص أرض بغلف", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["أرض المعارض القديمة", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["نيو جدة", "مجموعة النهار الدولية العقارية - حمدان نهار الحربي"],
+  ["أجياد المصافي", "عبدالرحمن وحمد سليمان التويجري"],
+  ["ارض شمال الرياض بلك 19", "عبدالرحمن وحمد سليمان التويجري"],
+  ["أرض الشرقية", "مكتب احمد سليمان السلامة"],
+  ["ارض ابن عمار", "مؤسسة عبدالله اللحيدان - عبدالله بن إبراهيم اللحيدان"],
+  ["جوهرة الرياض (لي مول)", "شركة عبدالملك البابطين"],
+  ["جوهرة جدة", "شركة عبدالملك البابطين"],
+  ["أحلى مول", "شركة عبدالملك البابطين"],
+  ["أجياد 1", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["روابي أجياد 2", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["درة العزيزية", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["أرض الحسينية", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["برج المشاعر", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["مشروع أضواء العزيزية", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["أرض شمال المغرزات وغرب المطار الجنوبي", "مؤسسة الجنوبي والفوزان - عبدالله ابراهيم الجنوبي"],
+  ["مخطط مربع 14", "مؤسسة عبدالعزيز النفيسة - عبدالعزيز بن محمد الناصر النفيسة"],
+  ["حي الملك عبدالعزيز (شمال المرسلات)", "مكتب محمد البصري"],
+  ["أرض الشرائع (اللهيب)", "شركة مداد للتطوير العمراني - عمر فهد اللهيب وشركاؤه"],
+  ["أرض بغرناطة الغربية", "مؤسسة إبراهيم محمد العمر"],
+  ["روضة العطيشان", "مكتب عبدالرحمن محمد عتيق الفواز"],
+  ["عمارة المجد (شارع الخزان)", "عبدالعزيز بن إبراهيم المحبوب وشركاه"],
+  ["أرض طريق الخرج (البراكا)", "مؤسسة البراكا للعقار والمقاولات - محمد بن عبدالعزيز بن براكا بن سويد"],
+  ["مربعات صناعية الدمام", "شركة تنميات - سليمان عبدالعزيز الماجد"],
+  ["أرض التشليح", "شركة تنميات - سليمان عبدالعزيز الماجد"],
+  ["أبراج نوارة المدينة", "مؤسسة علي فهد أبا الخيل"],
+  ["واحة المنتجعات", "شركة خالد سعود محمد العريفي"],
+  ["أرض الدمام طريق ابوحدرية", "مكتب ناصر بن محمد المانع للعقارات - ناصر بن محمد المانع"],
+  ["أسواق التويجري", "مكتب صالح عبدالعزيز التويجري للتطوير العقاري"],
+  ["أرض المؤسسة", "مؤسسة الإستثمارات التجارية - عتيق بن ناصر بن أحمد"],
+  ["ارض مكة (الحمدان)", "مكتب عبدالعزيز عبدالرحمن الحمدان للعقارات"],
+  ["ارض جنوب المعارض (جرش)", "مؤسسة جرش - محمد علي القحطاني"],
+  ["أسواق السويداني", "شركة السويداني للتطوير والإستثمار العقاري - عبدالله علي السويداني وأولاده"],
+  ["الحرة الشرقية", "شركة السويداني للتطوير والإستثمار العقاري - عبدالله علي السويداني وأولاده"],
+  ["درة الخبر", "شركة درة الخبر - جاسر علي الحربش"],
+  ["فلل كورنيش الخبر", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["فلل درة الخبر", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["فلل الريان 1", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["فلل الريان (2)", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["فلل الحزام الذهبي", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["أبراج العليا بالخبر", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["أبراج الجلوية", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["دار مكة", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["صفا الجوف", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["مخطط اشبيليا", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["مخطط الربيع", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["أرض الحرم", "شركة إعمار - خالد عبدالعزيز عبدالمحسن السريبي"],
+  ["أرض ينبع", "رواسي العربية - بدر مرزوق الروقي"],
+  ["شدا القنفذة", "شركة شدا المستقبل - عبدالسلام عبدالعزيز العبدالسلام"],
+  ["أرض الخبر", "شركة شدا المستقبل - عبدالسلام عبدالعزيز العبدالسلام"],
+  ["أم الرايات", "شركة شدا المستقبل - عبدالسلام عبدالعزيز العبدالسلام"],
+  ["جوهرة المقبل", "شركة متعب عبدالعزيز المقبل"],
+  ["أبو حدرية", "شركة متعب عبدالعزيز المقبل"],
+  ["الدمام 2", "شركة متعب عبدالعزيز المقبل"],
+  ["العزيزية 2", "شركة متعب عبدالعزيز المقبل"],
+  ["الدمام 1", "شركة متعب عبدالعزيز المقبل"],
+  ["جدة 4", "شركة متعب عبدالعزيز المقبل"],
+  ["جدة 3", "شركة متعب عبدالعزيز المقبل"],
+  ["الهيام 2", "شركة متعب عبدالعزيز المقبل"],
+  ["البساتين 2", "شركة متعب عبدالعزيز المقبل"],
+  ["مخطط أبحر", "شركة متعب عبدالعزيز المقبل"],
+  ["جواهر النمر", "مجموعة غسان النمر"],
+  ["مخطط الرابية", "مؤسسة صالح محمد عبدالله المحيميد"],
+  ["أرض شمال العليا", "مكتب عبدالرحمن العبدالله الحميد"],
+  ["مخطط المستقبل", "شركة صكوك - محمد بن يحيى بن محمد البكري"],
+  ["فلل الجامعة", "مكتب أحمد محمد الملا"],
+  ["أرض غرب العريجاء", "مؤسسة عين دار - عيدان نايف الطويل"],
+  ["شمال غرب المطار الجديد", "مكتب عبدالعزيز محمد الدخيل"],
+  ["أرض الساحلية", "مؤسسة علي حسن الملا"],
+  ["مربع غرب التخصصي (الرمال)", "شركة عقار وبناء للإستثمارات العقارية التضامنية - وليد علي السلوم"],
+  ["أرض بالجوف", "الشركة الحرة للتطوير العقاري - سعود بن سعد المقبل"],
+  ["مشروع عمارة الرياض سنتر", "مكتب السبيعي للاستثمار - علي بن حمد بن كهيمان السبيعي"],
+  ["مخطط الهدا", "شركة العقيلي للاستثمار - نايف عبدالرحمن العقيلي"],
+  ["ظهرة العريجاء", "مؤسسة زهرة البحر الأحمر - عبدالله بن مرزوق القحطاني"],
+  ["مخطط أمواج", "شركة أواس - عمر مبارك باعطية"],
+  ["غرب جنوب المطار الجديد", "مكتب الرويعي - دغيمان نافع الرويعي العنزي"],
+  ["جوهرة طيبة", "كرين للعقارات - عبدالله النفيسة"],
+  ["اثراء مول", "شركة دار إثراء الدولية - خالد عبدالعزيز عبدالمحسن السريبي"],
+  ["روضة أبحر", "مؤسسة صالح محمد عبدالله المحيميد"],
+  ["مخطط درة الشمال", "مؤسسة اللهيب العقارية - عمر فهد اللهيب"],
+  ["أرض الصغير", "مؤسسة صالح محمد عبدالله المحيميد"],
+  ["حي بدر غرب طريق القصيم", "عبدالرحمن وحمد سليمان التويجري"],
+  ["شارع الحج", "مؤسسة الجمعة للتطوير الاستثماري والعقاري - عبدالرحمن بن علي بن عبدالله الجمعة"],
+  ["برج دار الفائزين السكني", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["اجياد 3", "شركة تطوير وبناء المساكن - موسى عبيد الحربي"],
+  ["أرض طريق الخرج (الحمزة)", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["أرض طريق الخرج (اليحيى)", "شركة فهد عبدالعزيز اليحيى للتطوير - فهد عبدالعزيز اليحيى"],
+  ["أرض بطريق بريمان", "مكتب محمد الحمد القاسم - محمد الحمد القاسم"],
+  ["مخطط الخضراء بمكة المكرمة", "شركة الجزيرة العربية - ملهي العريفي"],
+  ["الشهابية", "مكتب الشهاب العقاري - أمير أحمد الشهاب"],
+  ["أرض الحسينية", "منانا العقارية - عبدالعزيز محمد الجعيثن"],
+  ["أرض الخرج", "شركة متعب عبدالعزيز المقبل"],
+  ["ارض مكة المسماه بارض الشلايخ", "مكتب ناصر بن محمد المانع للعقارات - ناصر بن محمد المانع"],
+  ["أرض الجوهرة بالعريجاء", "مؤسسة بدر التجارية العقارية - ناصر عبدالله إبراهيم الراشد"],
+  ["مخطط الرحاب", "مؤسسة اللهيب العقارية - عمر فهد اللهيب"],
+  ["ارض الأمير سعود بن ناصر", "مؤسسة محمد الحميسان التجارية - محمد بن عبدالله الحميسان"],
+  ["مشروع مبنى مكاتب (برج بكة)", "شركة أقطار الدولية للاستثمار والتطوير العقاري - فيصل بن عبدالله زيدان"],
+  ["أرض بريدة (النقع)", "مؤسسة الدرع للعقارات - عبدالله سليمان الدرع"],
+  ["أرض الدرعية", "مكتب المربعات للعقارات - عاصم ناصر الزغيبي"],
+  ["أرض الشفاء", "شركة موسى وسلطان الموسى - موسى وسلطان الموسى"],
+  ["أرض بن حيان", "عبدالمحسن الخرينق"],
+  ["أرض شمال شرق جدة", "المقوشي والخليفي للاستثمار العقاري - المقوشي والخليفي"],
+  ["أرض الجنادرية", "مجموعة ايكادا للاستثمار والتطوير العقاري - رباح الشمري"],
+  ["أرض الاميرة الجوهرة غرب العريجاء", "مؤسسة القمر التجارية العقارية - سليمان بن عبدالرحمن العيسى"],
+  ["جنوب بنبان", "مؤسسة البراكا للعقار والمقاولات - محمد بن عبدالعزيز بن براكا بن سويد"],
+  ["أرض الشرائع", "مكتب عبدالرحمن وحمد سليمان التويجري - عبدالرحمن وحمد سليمان التويجري"],
+  ["أرض جدة", "مكتب فهد محمد المالك"],
+  ["شمال السليمانية شرق المرسلات", "مؤسسة الملاح للتجارة والمقاولات - محمد عائض عبدالله الملاح الشهراني"],
+  ["حي السويدي الجنوبي", "مؤسسة البراكا للعقار والمقاولات - محمد بن عبدالعزيز بن براكا بن سويد"],
+  ["مشروع مدينة الجوهرة السياحية", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["فلل الشرق", "مؤسسة علي فهد أبا الخيل - علي بن فهد أبا الخيل"],
+  ["مجمع المحبوب التجاري (ميدان الخميس)", "عبدالعزيز بن إبراهيم المحبوب وشركاه - عبدالعزيز بن إبراهيم المحبوب"],
+  ["شارع الظهران ارض الكسارة", "مؤسسة محمد ابانمي للتجارة والخدمات العقارية وشريكه عبدالله اللحيدان - محمد ابانمي و عبدالله اللحيدان"],
+  ["ظهرة وادي لبن", "فهد ابن مقيل"],
+  ["مخطط شاطيء الرمال الذهبية", "مجموعة فهد آل بن علي - فهد بن سامي ال بن علي ويونس بوكنان"],
+  ["أرض العريجاء", "مؤسسة رنية التجارية - عبدالعزيز عبدالله العجيان"],
+  ["أرض العريجاء", "مؤسسة السبيعي العقارية التجارية - محمد السبيعي"],
+  ["جوهرة القديح", "سعيد محمد الحصان"],
+  ["مخطط المحمدية", "مكتب الربدي للعقارات - محمد فهد الربدي"],
+  ["مخطط العارض 13", "مكتب خطط المستقبل للعقارات - موسى الجعيدي وخالد الحميدان"],
+  ["درة المدينة", "شركة التسهيلات السعودية - صالح بن إبراهيم النهابي"],
+  ["درة الخليج", "مكتب خطط المستقبل للعقارات - موسى الجعيدي وخالد الحميدان"],
+  ["كنوز جدة", "مجموعة النهار الدولية ومكتب عبدالله عبدالعزيز الدخيل للعقارات - حمدان نهار الحربي وعبدالله عبدالعزيز الدخيل"],
+  ["مخطط النورس", "مجموعة صكوك للتطوير والإستثمار العقاري - محمد بن يحيى البكري"],
+  ["العليا تبوك", "شركة صالح الشريدة وعبدالعزيز الشمالي التضامنية - صالح الشريدة وعبدالعزيز الشمالي"],
+  ["سلطانة البحر", "مكتب عبدالله محمد السلطان للتطوير والاستثمار العقاري - عبدالله محمد السلطان"],
+  ["رمادا بلازا", "مجموعة النهار الدولية العقارية - حمدان نهار الحربي"],
+  ["مربع رقم 7 الفيصلية", "مكتب سلطان اللويحق للاستثمار العقاري - سلطان اللويحق"],
+  ["أرض التقنية", "مجموعة دار الطيار للعقارات"],
+  ["جوهرة الشرق", "مجموعة صالح الدريبي للإستثمار والتطوير العقاري - صالح الدريبي"],
+  ["حي المهندسين بالدلم", "شركة خالد عبدالمحسن التويجري للإستثمار والتطوير العقاري - خالد عبدالمحسن التويجري"],
+  ["المها", "مؤسسة المثمن للإستثمارات العقارية"],
+  ["مخطط النخيل", "مكتب المربعات للعقارات - عاصم ناصر الزغيبي"],
+  ["ظلال جدة", "شركة السويداني للتطوير والإستثمار العقاري - عبدالله علي السويداني وأولاده"],
+  ["بوابة الذهب", "شركة علي محمد العلي العقارية - علي بن محمد العلي"],
+  ["ربوع مكة", "مكتب سليمان بن صالح الحماد للاستثمار العقاري - سليمان بن صالح الحماد"],
+  ["أرض البشرى", "مكتب أعمال التميز - عبدالعزيز بن عبدالله الزلفاوي - فهد بن عبدالعزيز اليحيى"],
+  ["ارض شمال الرياض", "مكتب عبدالمحسن سليمان الخرينق - عبدالمحسن سليمان الخرينق"],
+  ["أرض العويجا", "محمد بن عبدالله بن ناصر الماضي"],
+  ["أرض المنيرة", "عبدالمحسن الخرينق"],
+  ["أرض العزيزية", "مؤسسة الصحفي - أحمد عطيه الصحفي"],
+  ["المدينة سنتر", "شركة قمة الاعتماد القابضة - فهد بن عبدالرحمن المطرود"],
+  ["مركز الخبيب سنتر التجاري", "مكتب أعمال الرضا للاستثمار العقاري - عبدالعزيز الكريديس وإبراهيم الوابلي وراشد التميميى وفهد الوتيد"],
+  ["جوهرة المطار (الغنامية)", "غنام بن علي الغنام"],
+  ["تمور المملكة", "شركة تمور المملكة - صلاح عبدالله النفيسي"],
+  ["أرض صلبوخ الحمدان", "مكتب عبدالعزيز عبدالرحمن الحمدان للعقارات"],
+  ["أرض جدة", "محسن العويني وعمر الهلابي"],
+  ["مشروع طريق خريص", "شركة الرياض الدولية للتطوير والاستثمار العقاري - هلال عبدالرحمن الهلال"],
+  ["ارض جنوب المطار", "مؤسسة عبدالله اللحيدان - عبدالله بن إبراهيم اللحيدان"],
+  ["أرض الجوهرة بالعريجاء", "مؤسسة عبدالله محمد السعيدان العقارية - عبدالله محمد السعيدان"],
+  ["جسر تاروت", "محمد الحمد المزروع"],
+  ["أرض العقير", "مكتب الخليج العقاري - سعد الغريب"],
+  ["أرض تبوك", "مؤسسة الغيث للعقارات - ابراهيم ناصر الغيث"],
+  ["أرض الكورنيش الجنوبي", "محمد بن عبدالله الثنيان"],
+  ["مخطط الديوان 2 بالمنطقة الشرقية", "حسين النمر"],
+  ["أرض الجوهرة بالعريجاء", "مؤسسة بشرى للتجارة"],
+  ["أرض الشروق بالعقير", "مكتب التقدم للخدمات العقارية - أحمد بوصال"],
+  ["أرض مكة والطائف", "شركة الائتمان للتجارة والتقسيط - عبدالعزيز المهوس وتركي بن صالح الغيث"],
+  ["ارض العيون", "مكتب خميس عبدالله حمدين وشركاءه للعقارات - خميس عبدالله حمدين"],
+  ["المليساء 3", "خالد البلطان"],
+  ["طريق خريص كيلو 22", "مكتب اس بي للاستثمار التجاري - سلطان بادي الشمري"],
+  ["غرب طريق القصيم وجنوب طريق بنبان", "مكتب عبدالمحسن بن محمد الزكري للعقارات - عبدالمحسن بن محمد الزكري"],
+  ["شمال المغرزات", "مؤسسة السبيعي العقارية التجارية - محمد السبيعي"],
+  ["أرض العزيزية بمكة المكرمة", "محمد الفوزان"],
+  ["أبراج العزيزية بمكة الكرمة", "محمد الفوزان"],
+  ["حي المصطفى", "شركة وحدة التنمية العقارية - حسين بن محمد بن علي الاربش"],
+  ["مخطط الفيصلية", "شركة الحمود والعلي"],
+  ["أرض الجامعة بابها", "مكتب بن منصور للاستثمارات العقارية - أحمد بن عبدالله منصور الشهري"],
+  ["أرض الكورنيش الجنوبي (الدريبي)", "مجموعة صالح الدريبي للإستثمار والتطوير العقاري - صالح عبدالرحمن الدريبي"],
+  ["طريق خريص (الملاح)", "مؤسسة الملاح للتجارة والمقاولات - محمد عائض عبدالله الملاح الشهراني"],
+  ["أرض طريق الحجاز الجديد بالعريجاء", "مكتب عبدالعزيز عبدالرحمن الحمدان للعقارات"],
+  ["جاردن سيتي", "عبداللطيف أحمد النمر"],
+  ["المنيفية بالخبر", "محمد بن عبدالرحمن السعيد"],
+  ["بدر 2030/أ و بدر 2030/ب", "مؤسسة بدر التجارية العقارية - ناصر عبدالله إبراهيم الراشد"],
+  ["جنوب شرقي المؤطاء ببريدة", "مؤسسة الدرع للعقارات والتجارة - عبدالله سليمان الدرع"],
+  ["جنوب مطار الرياض", "مكتب إبراهيم عبدالرحمن المفدى - إبراهيم عبدالرحمن المفدى"],
+  ["أرض الأمير نواف بن عبدالعزيز بالطائف", "سعد الزهراني"],
+  ["أرض الروضة شرق عنك", "مكتب النمر للخدمات العقارية - حسن بن محمد النمر"],
+  ["أرض الخبر", "مكتب مساعد عبدالله محمود للعقارات - مساعد عبدالله ال محمود"],
+  ["مخطط السهول", "دار التكاتف للاستثمارت العقارية - صلاح حمود عيد الثقيل العتيبي"],
+  ["أرض معارض الشفاء على طريق الحجاز (الجبرين)", "ناصر عبدالرحمن الجبرين"],
+  ["ارض بيت الطبيشي", "مكتب عقيل العقاري - حمد بن سعد إبراهيم بن عقيل"],
+  ["ارض بنبان (الجرمان)", "مكتب الجرمان - حسن حمود الجرمان"],
+  ["مشروع سوق جدة", "مؤسسة مساعد عبدالله السعدان - مساعد السعدان"],
+  ["أرض الواقعة جنوب المعارض بخريص", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["أرض جنوب جدة", "ورثة عبدالعزيز الموسى"],
+  ["سوق العتيبية", "مكتب رصاصية للعقارات - منصور بن عبدالعزيز الحسين"],
+  ["شمال الرياض", "مكتب ابن مبارك الشهراني - سعيد بن مبارك الشهراني"],
+  ["شرق بريدة (الحمزة)", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["ارض غرب العريجا", "مؤسسة عبدالرحمن عبدالعزيز الحسينان - عبدالرحمن عبدالعزيز الحسينان"],
+  ["ارض شارع عسير", "مؤسسة بدر التجارية العقارية - ناصر عبدالله إبراهيم الراشد"],
+  ["جنوب وشمال المعارض بطريق خريص", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["رقم 5 بطريق خريص شرق منطقة النسيم", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["رقم 20 بطريق خريص شرق مشروع فلل بغلف", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["الشبيلي بورت", "مكتب أحمد محمد الملا - أحمد محمد الملا"],
+  ["أرض القطيف", "عبدالرحمن عبدالله الموسى"],
+  ["أرض المعارض الجديدة مخطط رقم 2861", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["أرض طريق خريص غرب معارض السيارات رقم 19", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["أرض العزيزية", "شركة عبدالعزيز عبدالله الموسى - عبدالعزيز عبدالله الموسى"],
+  ["الأرض الواقعة قرب المصفاة", "مؤسسة الاعتماد - عبدالله الحامدي"],
+  ["الأرض الواقعة جنوب المطار الجديد قطعة رقم 46", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["ارض امتداد التخصصي", "عثمان بن محمد الرشيد"],
+  ["شمال شرق أم الحمام", "مؤسسة الملاح للتجارة والمقاولات - محمد عائض عبدالله الملاح الشهراني"],
+  ["أرض طريق صلبوخ شمال كبري العمارية (أرض المستودعات)", "خالد عبدالله عبدالعزيز الشقري"],
+  ["ارض الطالعية الواقعة في البطالية", "مجموعة حسن للاستثمارات العقارية - حسن عيسى علي الهاشم"],
+  ["ارض البطحاء قريش بمكة المكرمة", "مؤسسة اللهيب العقارية - عمر فهد اللهيب"],
+  ["استراحات الزيتون ببريدة", "مؤسسة اللهيب العقارية - عمر فهد اللهيب"],
+  ["ارض الشوقية بمكة المكرمة", "مؤسسة اللهيب العقارية - عمر فهد اللهيب"],
+  ["طريق الخرج كيلو (30)", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["ارض شاطئ نصف القمر", "مكتب أصول للاستثمارات العقارية - سعد عبدالله المقرني"],
+  ["الفاقعة شمال الرياض", "مكتب الحمزة العقاري - حمزة علي سليمان الحمزة"],
+  ["الأرض الواقعة على طريق صلبوخ شرق الاسفلت كيلو 11 و 12", "مكتب العشري للعقارات - محمد أحمد الفايز العشري"],
+  ["ارض العريجاء", "المكتب العقاري - سعد بن عبدالعزيز بن مفرج"],
+  ["ارض الخرج", "شركة خالد التويجري للاستثمار والتطوير العقاري - خالد التويجري"],
+  ["مخطط المجد ق/ر/23", "مكتب إسماعيل العقاري - إسماعيل بن هندي العماري"],
+  ["مساهمة الصفا بصفوى", "مكتب عبدالغني موسى الدجاني العقاري - عبدالغني موسى الدجاني"],
+  ["جنوب غرب المطار الجديد", "فيصل عبدالله السبيعي"],
+  ["ارض الخرج", "عبدالله بن سالم باهبري"],
+  ["الأرض الواقعة بجهاد", "مكتب محمد البصري للعقارات - محمد البصري"],
+  ["هجر", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["ارض جبل الكعبة في مكة", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["جوهرة الخليج", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["الخزامى", "بن حسن للاستثمار - عثمان بن عبدالله بن حسن"],
+  ["العليا على الزفلت الشارع الرئيسي", "مؤسسة جرش - محمد علي القحطاني"],
+  ["مساهمة نماء", "شركة المديميغ والحسيني للاستثمار والتطوير العقاري - عبدالرحمن بن محمد الحسيني"],
+  ["شرائع المجاهدين", "شركة الجزيرة العربية - ملهي العريفي"],
+  ["أبراج البركة", "شركة التسهيلات - صالح النهابي"],
+  ["الحمودية", "مكتب عبد العزيز سليمان الحمود - عبد العزيز سليمان الحمود"],
+  ["مخطط قيران مربع 11 و 12", "مكتب العشري للعقارات - محمد بن أحمد العشري"],
+  ["طريق القصيم مربع 11 و 12", "مكتب العشري للعقارات - محمد بن أحمد العشري"],
+  ["شمال الرياض جنوب بنبان مربع 11 و 12", "مكتب العشري للعقارات - محمد بن أحمد العشري"],
+  ["روضة صفوى", "مكتب حاضرة الدمام العقاري - محمد بن ياسين بن علي بوخمسين"],
+  ["جاردن سيتي", "مؤسسة الكاف العقارية"]
+];
+
+/* ═══════════ FORM ↔ DECISION TREE LIVE BRANCHING ═══════════ */
+// Maps a form field's tree key to the relevant DECISION_TREES entry,
+// and tracks the in-progress answer path per field.
+const fieldBranchPath = { encroachment: [], overlap: [], mortgage: [], subdivision: [], cancelled: [], promissory: [], survey: [], planning: [], lawsuit: [] };
+
+/* إظهار/إخفاء "حالة العقار" حسب "هل يوجد عقار" */
+const NAME_OPTIONS = [
+  "الحمودية",
+  "حي قرطبة",
+  "أرض المدينة",
+  "أرض بطريق الثمامة",
+  "شمال طريق خريص أرض بغلف",
+  "أرض المعارض القديمة",
+  "نيو جدة",
+  "أجياد المصافي",
+  "ارض شمال الرياض بلك 19",
+  "أرض الشرقية",
+  "ارض ابن عمار",
+  "جوهرة الرياض (لي مول)",
+  "جوهرة جدة",
+  "أحلى مول",
+  "أجياد 1",
+  "روابي أجياد 2",
+  "درة العزيزية",
+  "أرض الحسينية",
+  "برج المشاعر",
+  "مشروع أضواء العزيزية",
+  "أرض شمال المغرزات وغرب المطار الجنوبي",
+  "مخطط مربع 14",
+  "حي الملك عبدالعزيز (شمال المرسلات)",
+  "أرض الشرائع (اللهيب)",
+  "أرض بغرناطة الغربية",
+  "روضة العطيشان",
+  "عمارة المجد (شارع الخزان)",
+  "أرض طريق الخرج (البراكا)",
+  "مربعات صناعية الدمام",
+  "أرض التشليح",
+  "أبراج نوارة المدينة",
+  "واحة المنتجعات",
+  "أرض الدمام طريق ابوحدرية",
+  "أسواق التويجري",
+  "أرض المؤسسة",
+  "ارض مكة (الحمدان)",
+  "ارض جنوب المعارض (جرش)",
+  "أسواق السويداني",
+  "الحرة الشرقية",
+  "درة الخبر",
+  "فلل كورنيش الخبر",
+  "فلل درة الخبر",
+  "فلل الريان 1",
+  "فلل الريان (2)",
+  "فلل الحزام الذهبي",
+  "أبراج العليا بالخبر",
+  "أبراج الجلوية",
+  "دار مكة",
+  "صفا الجوف",
+  "مخطط اشبيليا",
+  "مخطط الربيع",
+  "أرض الحرم",
+  "أرض ينبع",
+  "شدا القنفذة",
+  "أرض الخبر",
+  "أم الرايات",
+  "جوهرة المقبل",
+  "أبو حدرية",
+  "الدمام 2",
+  "العزيزية 2",
+  "الدمام 1",
+  "جدة 4",
+  "جدة 3",
+  "الهيام 2",
+  "البساتين 2",
+  "مخطط أبحر",
+  "جواهر النمر",
+  "مخطط الرابية",
+  "أرض شمال العليا",
+  "مخطط المستقبل",
+  "فلل الجامعة",
+  "أرض غرب العريجاء",
+  "شمال غرب المطار الجديد",
+  "أرض الساحلية",
+  "مربع غرب التخصصي (الرمال)",
+  "أرض بالجوف",
+  "مشروع عمارة الرياض سنتر",
+  "مخطط الهدا",
+  "ظهرة العريجاء",
+  "مخطط أمواج",
+  "غرب جنوب المطار الجديد",
+  "جوهرة طيبة",
+  "اثراء مول",
+  "روضة أبحر",
+  "مخطط درة الشمال",
+  "أرض الصغير",
+  "حي بدر غرب طريق القصيم",
+  "شارع الحج",
+  "برج دار الفائزين السكني",
+  "اجياد 3",
+  "أرض طريق الخرج (الحمزة)",
+  "أرض طريق الخرج (اليحيى)",
+  "أرض بطريق بريمان",
+  "مخطط الخضراء بمكة المكرمة",
+  "الشهابية",
+  "أرض الحسينية",
+  "أرض الخرج",
+  "ارض مكة المسماه بارض الشلايخ",
+  "أرض الجوهرة بالعريجاء",
+  "مخطط الرحاب",
+  "ارض الأمير سعود بن ناصر",
+  "مشروع مبنى مكاتب (برج بكة)",
+  "أرض بريدة (النقع)",
+  "أرض الدرعية",
+  "أرض الشفاء",
+  "أرض بن حيان",
+  "أرض شمال شرق جدة",
+  "أرض الجنادرية",
+  "أرض الاميرة الجوهرة غرب العريجاء",
+  "جنوب بنبان",
+  "أرض الشرائع",
+  "أرض جدة",
+  "شمال السليمانية شرق المرسلات",
+  "حي السويدي الجنوبي",
+  "مشروع مدينة الجوهرة السياحية",
+  "فلل الشرق",
+  "مجمع المحبوب التجاري (ميدان الخميس)",
+  "شارع الظهران ارض الكسارة",
+  "ظهرة وادي لبن",
+  "مخطط شاطيء الرمال الذهبية",
+  "أرض العريجاء",
+  "جوهرة القديح",
+  "مخطط المحمدية",
+  "مخطط العارض 13",
+  "درة المدينة",
+  "درة الخليج",
+  "كنوز جدة",
+  "مخطط النورس",
+  "العليا تبوك",
+  "سلطانة البحر",
+  "رمادا بلازا",
+  "مربع رقم 7 الفيصلية",
+  "أرض التقنية",
+  "جوهرة الشرق",
+  "حي المهندسين بالدلم",
+  "المها",
+  "مخطط النخيل",
+  "ظلال جدة",
+  "بوابة الذهب",
+  "ربوع مكة",
+  "أرض البشرى",
+  "ارض شمال الرياض",
+  "أرض العويجا",
+  "أرض المنيرة",
+  "أرض العزيزية",
+  "المدينة سنتر",
+  "مركز الخبيب سنتر التجاري",
+  "جوهرة المطار (الغنامية)",
+  "تمور المملكة",
+  "أرض صلبوخ الحمدان",
+  "مشروع طريق خريص",
+  "ارض جنوب المطار",
+  "أرض الجوهرة بالعريجاء",
+  "جسر تاروت",
+  "أرض العقير",
+  "أرض تبوك",
+  "أرض الكورنيش الجنوبي",
+  "أرض الكورنيش الجنوبي (الدريبي)",
+  "مخطط الديوان 2 بالمنطقة الشرقية",
+  "أرض الشروق بالعقير",
+  "أرض مكة والطائف",
+  "ارض العيون",
+  "المليساء 3",
+  "طريق خريص كيلو 22",
+  "غرب طريق القصيم وجنوب طريق بنبان",
+  "شمال المغرزات",
+  "أرض العزيزية بمكة المكرمة",
+  "أبراج العزيزية بمكة الكرمة",
+  "حي المصطفى",
+  "مخطط الفيصلية",
+  "أرض الجامعة بابها",
+  "طريق خريص (الملاح)",
+  "أرض طريق الحجاز الجديد بالعريجاء",
+  "جاردن سيتي",
+  "المنيفية بالخبر",
+  "بدر 2030/أ و بدر 2030/ب",
+  "جنوب شرقي المؤطاء ببريدة",
+  "جنوب مطار الرياض",
+  "أرض الأمير نواف بن عبدالعزيز بالطائف",
+  "أرض الروضة شرق عنك",
+  "مخطط السهول",
+  "أرض معارض الشفاء على طريق الحجاز (الجبرين)",
+  "ارض بيت الطبيشي",
+  "ارض بنبان (الجرمان)",
+  "مشروع سوق جدة",
+  "أرض الواقعة جنوب المعارض بخريص",
+  "أرض جنوب جدة",
+  "سوق العتيبية",
+  "شمال الرياض",
+  "شرق بريدة (الحمزة)",
+  "ارض غرب العريجا",
+  "ارض شارع عسير",
+  "جنوب وشمال المعارض بطريق خريص",
+  "رقم 5 بطريق خريص شرق منطقة النسيم",
+  "رقم 20 بطريق خريص شرق مشروع فلل بغلف",
+  "الشبيلي بورت",
+  "أرض القطيف",
+  "أرض المعارض الجديدة مخطط رقم 2861",
+  "أرض طريق خريص غرب معارض السيارات رقم 19",
+  "الأرض الواقعة قرب المصفاة",
+  "الأرض الواقعة جنوب المطار الجديد قطعة رقم 46",
+  "ارض امتداد التخصصي",
+  "شمال شرق أم الحمام",
+  "أرض طريق صلبوخ شمال كبري العمارية (أرض المستودعات)",
+  "ارض الطالعية الواقعة في البطالية",
+  "ارض البطحاء قريش بمكة المكرمة",
+  "استراحات الزيتون ببريدة",
+  "ارض الشوقية بمكة المكرمة",
+  "طريق الخرج كيلو (30)",
+  "ارض شاطئ نصف القمر",
+  "الفاقعة شمال الرياض",
+  "الأرض الواقعة على طريق صلبوخ شرق الاسفلت كيلو 11 و 12",
+  "ارض العريجاء",
+  "ارض الخرج",
+  "مخطط المجد ق/ر/23",
+  "مساهمة الصفا بصفوى",
+  "جنوب غرب المطار الجديد",
+  "الأرض الواقعة بجهاد",
+  "هجر",
+  "ارض جبل الكعبة في مكة",
+  "جوهرة الخليج",
+  "الخزامى",
+  "العليا على الزفلت الشارع الرئيسي",
+  "مساهمة نماء",
+  "شرائع المجاهدين",
+  "أبراج البركة",
+  "مخطط قيران مربع 11 و 12",
+  "طريق القصيم مربع 11 و 12",
+  "شمال الرياض جنوب بنبان مربع 11 و 12",
+  "روضة صفوى"
+];
+
+function filterNameOptions(q) {
+  const dropdown = document.getElementById('name-dropdown');
+  const filtered = q.trim()
+    ? NAME_OPTIONS.filter(n => n.includes(q.trim()))
+    : NAME_OPTIONS;
+  renderNameDropdown(filtered, q.trim());
+  dropdown.style.display = filtered.length ? 'block' : 'none';
+}
+
+function showNameDropdown() {
+  const q = document.getElementById('name-search-input').value.trim();
+  const items = q ? NAME_OPTIONS.filter(n => n.includes(q)) : NAME_OPTIONS;
+  renderNameDropdown(items, q);
+  document.getElementById('name-dropdown').style.display = 'block';
+}
+
+function renderNameDropdown(items, q) {
+  const dd = document.getElementById('name-dropdown');
+  dd.innerHTML = '';
+  items.forEach(n => {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);';
+    div.onmouseover = () => div.style.background = 'var(--accent-light)';
+    div.onmouseout  = () => div.style.background = '';
+    div.onclick     = () => selectName(n);
+    if (q && n.includes(q)) {
+      const idx = n.indexOf(q);
+      div.appendChild(document.createTextNode(n.slice(0, idx)));
+      const strong = document.createElement('strong');
+      strong.style.color = 'var(--accent)';
+      strong.textContent = q;
+      div.appendChild(strong);
+      div.appendChild(document.createTextNode(n.slice(idx + q.length)));
+    } else {
+      div.textContent = n;
+    }
+    dd.appendChild(div);
+  });
+}
+
+function selectName(name) {
+  document.getElementById('name-search-input').value = name;
+  document.getElementById('f-name').value = name;
+  document.getElementById('name-dropdown').style.display = 'none';
+  onNameChange(name);
+}
+
+// Close dropdown on outside click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('name-search-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('name-dropdown').style.display = 'none';
+  }
+});
+
+function onNameChange(name) {
+  if (!name) return;
+  const match = CONTRIBUTIONS_DB.find(r => r[0] === name);
+  if (match) {
+    document.getElementById('f-owner').value = match[1];
+  }
+}
+
+function onHasPropertyChange(value) {
+  const propertyStatusGroup = document.getElementById('group-property-status');
+  const dependentSection = document.getElementById('property-dependent-section');
+  const ownershipRow = document.getElementById('group-ownership-row');
+
+  if (value === 'لا') {
+    // إخفاء "حالة العقار"
+    document.getElementById('f-property-status').value = '';
+    clearPropertyStatuses();
+    propertyStatusGroup.style.display = 'none';
+
+    // إخفاء "ملكية الأرض" ومسح قيمتها وإخفاء فرع الفرز التابع لها
+    document.getElementById('f-ownership').value = '';
+    ownershipRow.style.display = 'none';
+    fieldBranchPath.subdivision = [];
+    const subdivisionBox = document.getElementById('branch-subdivision');
+    if (subdivisionBox) subdivisionBox.innerHTML = '';
+
+    // إخفاء القسم الكامل المرتبط بالعقار: بيانات العقار، التعديات، التداخل،
+    // موافقة المرافق، تحديث الوثيقة وعائقها، التخطيط، والرهن
+    dependentSection.style.display = 'none';
+
+    // مسح كل الحقول داخل القسم حتى لا تُحفظ قيم قديمة غير ذات صلة
+    ['f-survey','f-encroach','f-overlap','f-utility','f-doc-update','f-update-barrier','f-planning','f-mortgage']
+      .forEach(id => { document.getElementById(id).value = ''; });
+    const planningBranchBox = document.getElementById('branch-planning');
+    if (planningBranchBox) planningBranchBox.innerHTML = '';
+    fieldBranchPath.planning = [];
+    const surveyBranchBox = document.getElementById('branch-survey');
+    if (surveyBranchBox) surveyBranchBox.innerHTML = '';
+    fieldBranchPath.survey = [];
+
+    // إعادة ضبط فروع القرار التابعة (التعديات/التداخل/الرهن) وإخفاء صناديقها
+    ['encroachment','overlap','mortgage','cancelled'].forEach(key => {
+      fieldBranchPath[key] = [];
+      const c = document.getElementById('branch-' + key);
+      if (c) c.innerHTML = '';
+    });
+    // Reset property status select to clear cancelled branch
+    document.getElementById('f-property-status').value = '';
+
+    // إعادة إظهار حقل عائق التحديث افتراضياً لمرة قادمة
+    document.getElementById('group-update-barrier').style.display = '';
+  } else {
+    propertyStatusGroup.style.display = '';
+    ownershipRow.style.display = '';
+    dependentSection.style.display = '';
+  }
+}
+
+/* إظهار/إخفاء "عائق التحديث" حسب "هل تحتاج الوثيقة إلى تحديث" */
+function onDocUpdateChange(value) {
+  const group = document.getElementById('group-update-barrier');
+  if (value === 'لا') {
+    document.getElementById('f-update-barrier').value = '';
+    group.style.display = 'none';
+  } else {
+    group.style.display = '';
+  }
+}
+
+function onLawsuitChange(value) {
+  fieldBranchPath.lawsuit = [];
+  const container = document.getElementById('branch-lawsuit');
+  if (value === 'نعم') {
+    renderFieldBranch('lawsuit');
+  } else {
+    if (container) container.innerHTML = '';
+  }
+}
+
+function onPlanningChange(value) {
+  fieldBranchPath.planning = [];
+  const container = document.getElementById('branch-planning');
+  if (value === 'نعم') {
+    renderFieldBranch('planning');
+  } else {
+    if (container) container.innerHTML = '';
+  }
+}
+
+function onSurveyChange(value) {
+  fieldBranchPath.survey = [];
+  const container = document.getElementById('branch-survey');
+  if (value === 'نعم') {
+    renderFieldBranch('survey');
+  } else {
+    if (container) container.innerHTML = '';
+  }
+}
+
+function onOrderChange(value) {
+  fieldBranchPath.promissory = [];
+  const container = document.getElementById('branch-promissory');
+  const otherWrap = document.getElementById('order-other-wrap');
+  if (otherWrap) otherWrap.style.display = 'none';
+  const otherInput = document.getElementById('f-order-other');
+  if (otherInput) otherInput.value = '';
+  if (value === 'نعم') {
+    renderFieldBranch('promissory');
+  } else {
+    if (container) container.innerHTML = '';
+  }
+}
+
+/* إظهار مسار الصك الملغى عند اختيار "ملغى" في حالة العقار */
+
+/* ══ Multi Property Status Widget ══ */
+const PROPERTY_STATUS_OPTIONS = ["تحت الدراسة", "منزوع", "مباع", "منزوع جزئياً", "مهيأ للبيع", "بحاجة للفرز", "ملغى"];
+
+// حالات لها مسارات قرار مستقلة
+const STATUS_HAS_BRANCH = { 'ملغى': 'cancelled' };
+
+// مسارات الحالات المتعددة: مفتاح لكل index
+const statusBranchPaths = {}; // e.g. { 0: [], 1: [] }
+
+let propertyStatuses = []; // array of {status, note, pct}
+
+function addPropertyStatus(defaultStatus='') {
+  const idx = propertyStatuses.length;
+  propertyStatuses.push({ status: defaultStatus, note: '', pct: '' });
+  statusBranchPaths[idx] = [];
+  renderPropertyStatuses();
+  if (defaultStatus && STATUS_HAS_BRANCH[defaultStatus]) {
+    renderStatusBranch(idx, defaultStatus);
+  }
+}
+
+function removePropertyStatus(idx) {
+  propertyStatuses.splice(idx, 1);
+  delete statusBranchPaths[idx];
+  // Re-index remaining paths
+  const newPaths = {};
+  Object.keys(statusBranchPaths).forEach((k, i) => { newPaths[i] = statusBranchPaths[k]; });
+  Object.keys(statusBranchPaths).forEach(k => delete statusBranchPaths[k]);
+  Object.assign(statusBranchPaths, newPaths);
+  renderPropertyStatuses();
+  syncPropertyStatusHidden();
+  syncCancelledBranchPath();
+}
+
+function onPStatusChange(idx, val) {
+  propertyStatuses[idx].status = val;
+  statusBranchPaths[idx] = [];
+  syncPropertyStatusHidden();
+  renderStatusBranch(idx, val);
+  syncCancelledBranchPath();
+}
+function onPStatusNote(idx, val) { propertyStatuses[idx].note = val; syncPropertyStatusHidden(); }
+function onPStatusPct(idx, val)  { propertyStatuses[idx].pct  = val; syncPropertyStatusHidden(); }
+
+function renderPropertyStatuses() {
+  const wrap = document.getElementById('mps-wrap');
+  if (!wrap) return;
+  const oldBranches = {};
+  wrap.querySelectorAll('.mps-branch-wrap').forEach(el => {
+    oldBranches[el.dataset.idx] = el.innerHTML;
+  });
+
+  wrap.innerHTML = propertyStatuses.map((ps, i) => {
+    const hasBranch = ps.status && STATUS_HAS_BRANCH[ps.status];
+    return `
+    <div class="mps-entry" data-idx="${i}">
+      <div class="mps-row">
+        <select onchange="onPStatusChange(${i}, this.value)">
+          <option value="">— اختر الحالة —</option>
+          ${PROPERTY_STATUS_OPTIONS.map(o => `<option ${ps.status===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+        <input class="mps-pct" type="text" placeholder="النسبة %" value="${ps.pct||''}"
+          oninput="onPStatusPct(${i}, this.value)" title="نسبة هذا الجزء من العقار (اختياري)" />
+        <input type="text" placeholder="ملاحظة (اختياري)" value="${ps.note||''}"
+          oninput="onPStatusNote(${i}, this.value)" />
+        <button type="button" class="mps-remove" onclick="removePropertyStatus(${i})" title="حذف">✕</button>
+      </div>
+      <div class="mps-branch-wrap inline-branch" id="mps-branch-${i}" data-idx="${i}"></div>
+    </div>`;
+  }).join('');
+
+  // Re-render branches for current statuses
+  propertyStatuses.forEach((ps, i) => {
+    if (ps.status && STATUS_HAS_BRANCH[ps.status]) {
+      renderStatusBranch(i, ps.status);
+    }
+  });
+
+  syncPropertyStatusHidden();
+}
+
+function renderStatusBranch(idx, status) {
+  const container = document.getElementById(`mps-branch-${idx}`);
+  if (!container) return;
+
+  const branchKey = STATUS_HAS_BRANCH[status];
+  if (!branchKey) { container.innerHTML = ''; return; }
+
+  // Use a namespaced path for this idx
+  const pathKey = `status_${idx}_${branchKey}`;
+  if (!fieldBranchPath[pathKey]) fieldBranchPath[pathKey] = [];
+
+  // Temporarily remap to render using existing engine
+  const originalPath = fieldBranchPath[branchKey];
+  fieldBranchPath[branchKey] = fieldBranchPath[pathKey];
+
+  const tree = DECISION_TREES[branchKey];
+  if (!tree) { fieldBranchPath[branchKey] = originalPath; return; }
+
+  // Walk tree with current path
+  function walkLocal() {
+    let node = tree.root;
+    for (const step of fieldBranchPath[branchKey]) {
+      if (node.branches) node = node.branches[step.answer];
+      else node = step.answer === 'نعم' ? node.yes : node.no;
+    }
+    return node;
+  }
+
+  const path = fieldBranchPath[branchKey];
+  const node = walkLocal();
+  const isLeaf = node && node.result !== undefined;
+
+  let html = '';
+  let n = tree.root;
+  for (let i = 0; i < path.length; i++) {
+    const step = path[i];
+    html += `<div class="ib-step">
+      <div class="ib-question">${escapeHTML(step.question)}</div>
+      <div class="ib-options">${renderStatusBranchOptions(n, idx, branchKey, i, step.answer)}</div>
+    </div>`;
+    n = n.branches ? n.branches[step.answer] : (step.answer==='نعم'?n.yes:n.no);
+  }
+
+  if (!isLeaf && node && node.q) {
+    html += `<div class="ib-step">
+      <div class="ib-question">${escapeHTML(node.q)}</div>
+      <div class="ib-options">${renderStatusBranchOptions(node, idx, branchKey, path.length, null)}</div>
+    </div>`;
+  }
+
+  if (isLeaf) {
+    html += `<div class="ib-result"><div class="ib-result-label">الإجراء المطلوب</div><div class="ib-result-text">${escapeHTML(node.result)}</div></div>`;
+    // Save to statusBranchPaths for later extraction
+    statusBranchPaths[idx] = { branchKey, result: node.result };
+  }
+
+  container.innerHTML = html;
+
+  // Restore
+  fieldBranchPath[branchKey] = originalPath;
+
+  // Attach click listeners
+  container.querySelectorAll('.ib-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const depth = parseInt(btn.dataset.depth, 10);
+      const question = btn.dataset.question;
+      const answer = btn.dataset.answer;
+      chooseStatusBranch(idx, branchKey, depth, question, answer);
+    });
+  });
+
+  syncCancelledBranchPath();
+}
+
+function renderStatusBranchOptions(node, statusIdx, branchKey, depth, selectedAnswer) {
+  const q = node.q;
+  const sel = selectedAnswer || '';
+  if (node.branches) {
+    return Object.keys(node.branches).map(label =>
+      `<button type="button" class="ib-opt${sel===label?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="${escapeAttr(label)}">${escapeHTML(label)}</button>`
+    ).join('');
+  }
+  return `
+    <button type="button" class="ib-opt${sel==='نعم'?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="نعم">نعم</button>
+    <button type="button" class="ib-opt${sel==='لا'?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="لا">لا</button>`;
+}
+
+function chooseStatusBranch(statusIdx, branchKey, depth, question, answer) {
+  const pathKey = `status_${statusIdx}_${branchKey}`;
+  if (!fieldBranchPath[pathKey]) fieldBranchPath[pathKey] = [];
+  fieldBranchPath[pathKey] = fieldBranchPath[pathKey].slice(0, depth);
+  fieldBranchPath[pathKey].push({ question, answer });
+  // Temporarily remap for rendering
+  const orig = fieldBranchPath[branchKey];
+  fieldBranchPath[branchKey] = fieldBranchPath[pathKey];
+  renderStatusBranch(statusIdx, propertyStatuses[statusIdx].status);
+  fieldBranchPath[branchKey] = orig;
+}
+
+function syncCancelledBranchPath() {
+  // Keep the main cancelled fieldBranchPath in sync for getBranchSummary
+  const cancelledIdx = propertyStatuses.findIndex(p => p.status === 'ملغى');
+  if (cancelledIdx >= 0) {
+    const pathKey = `status_${cancelledIdx}_cancelled`;
+    fieldBranchPath.cancelled = fieldBranchPath[pathKey] || [];
+  } else {
+    fieldBranchPath.cancelled = [];
+  }
+}
+
+function syncPropertyStatusHidden() {
+  const val = propertyStatuses.filter(p=>p.status).map(p => {
+    let s = p.status;
+    if (p.pct) s += ` (${p.pct}%)`;
+    if (p.note) s += ` — ${p.note}`;
+    return s;
+  }).join(' | ');
+  const el = document.getElementById('f-property-status');
+  if (el) el.value = val;
+}
+
+function checkCancelledBranch() {
+  // Legacy: kept for compatibility but now handled by per-row rendering
+  syncCancelledBranchPath();
+}
+
+function clearPropertyStatuses() {
+  propertyStatuses = [];
+  Object.keys(statusBranchPaths).forEach(k => delete statusBranchPaths[k]);
+  // Clear any status-keyed fieldBranchPaths
+  Object.keys(fieldBranchPath).filter(k => k.startsWith('status_')).forEach(k => delete fieldBranchPath[k]);
+  fieldBranchPath.cancelled = [];
+  const wrap = document.getElementById('mps-wrap');
+  if (wrap) wrap.innerHTML = '';
+  syncPropertyStatusHidden();
+}
+
+/* restore multi-status from saved string (for edit modal) */
+function parsePropertyStatus(str) {
+  if (!str) return [];
+  return str.split(' | ').map(part => {
+    const pctMatch = part.match(/^(.+?) \((\d+)%\)/);
+    const noteMatch = part.match(/ — (.+)$/);
+    let status = part.replace(/ \(\d+%\)/, '').replace(/ — .+$/, '').trim();
+    return { status, pct: pctMatch ? pctMatch[2] : '', note: noteMatch ? noteMatch[1] : '' };
+  });
+}
+
+function onPropertyStatusChange(value) {
+  fieldBranchPath.cancelled = [];
+  const container = document.getElementById('branch-cancelled');
+  if (value === 'ملغى') {
+    renderFieldBranch('cancelled');
+  } else {
+    if (container) container.innerHTML = '';
+  }
+}
+
+/* إظهار مسار الفرز عند اختيار "مشاع" في ملكية الأرض */
+function onOwnershipChange(value) {
+  fieldBranchPath.subdivision = [];
+  const container = document.getElementById('branch-subdivision');
+  if (value === 'مشاع') {
+    renderFieldBranch('subdivision');
+  } else {
+    container.innerHTML = '';
+  }
+}
+
+
+function onFieldChange(key, value) {
+  // Selecting "لا" or resetting clears any sub-path and sub-answers
+  fieldBranchPath[key] = [];
+  if (value === 'نعم') {
+    fieldBranchPath[key].push({ question: DECISION_TREES[key].root.q, answer: 'نعم' });
+  }
+  renderFieldBranch(key);
+}
+
+function walkFieldTree(key) {
+  const tree = DECISION_TREES[key];
+  let node = tree.root;
+  for (const step of fieldBranchPath[key]) {
+    if (node.branches) node = node.branches[step.answer];
+    else node = step.answer === 'نعم' ? node.yes : node.no;
+  }
+  return node;
+}
+
+function renderFieldBranch(key) {
+  const container = document.getElementById('branch-' + key);
+  const path = fieldBranchPath[key];
+  const tree = DECISION_TREES[key];
+
+  // المسارات التي تبدأ من select خارجي (نعم/لا) تتجاهل عرضها إن كان المسار فارغاً
+  // أما المسارات المستقلة (كالفرز) فتُعرض من جذرها مباشرة دون انتظار select خارجي
+  const hasExternalTrigger = ['encroachment','overlap','mortgage'].includes(key);
+  if (hasExternalTrigger && !path.length) { container.innerHTML = ''; return; }
+
+  const node = walkFieldTree(key);
+  const isLeaf = node && node.result !== undefined;
+
+  let html = '';
+  let n = tree.root;
+  const startIdx = hasExternalTrigger ? 1 : 0;
+  for (let i = 0; i < path.length; i++) {
+    const step = path[i];
+    if (i === 0 && hasExternalTrigger) { n = n.branches ? n.branches[step.answer] : (step.answer==='نعم'?n.yes:n.no); continue; }
+    // render past step with the chosen answer highlighted
+    html += `<div class="ib-step">
+      <div class="ib-question">${escapeHTML(step.question)}</div>
+      <div class="ib-options">${renderOptionsHTML(n, key, i, step.answer)}</div>
+    </div>`;
+    n = n.branches ? n.branches[step.answer] : (step.answer==='نعم'?n.yes:n.no);
+  }
+
+  if (!isLeaf && node && node.q) {
+    html += `<div class="ib-step"><div class="ib-question">${escapeHTML(node.q)}</div>
+      <div class="ib-options">${renderOptionsHTML(node, key, path.length)}</div></div>`;
+  }
+
+  if (isLeaf) {
+    if (node.result === '__OTHER__') {
+      html += `<div class="ib-result"><div class="ib-result-label">الإجراء المطلوب</div><div class="ib-result-text">اذكر الحالة في الحقل أدناه</div></div>`;
+      // Show the other text input
+      const otherWrap = document.getElementById('order-other-wrap');
+      if (otherWrap) otherWrap.style.display = 'block';
+    } else {
+      html += `<div class="ib-result"><div class="ib-result-label">الإجراء المطلوب</div><div class="ib-result-text">${escapeHTML(node.result)}</div></div>`;
+      const otherWrap = document.getElementById('order-other-wrap');
+      if (otherWrap) otherWrap.style.display = 'none';
+    }
+  }
+
+  container.innerHTML = html;
+
+  // attach click listeners (avoids quote-escaping issues with Arabic text in onclick attrs)
+  container.querySelectorAll('.ib-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const depth = parseInt(btn.dataset.depth, 10);
+      const question = btn.dataset.question;
+      const answer = btn.dataset.answer;
+      chooseFieldBranch(key, depth, question, answer);
+    });
+  });
+}
+
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+function escapeAttr(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderOptionsHTML(node, key, depth, selectedAnswer) {
+  const q = node.q;
+  const sel = selectedAnswer || '';
+  if (node.branches) {
+    return Object.keys(node.branches).map(label =>
+      `<button type="button" class="ib-opt${sel===label?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="${escapeAttr(label)}">${escapeHTML(label)}</button>`
+    ).join('');
+  }
+  return `
+    <button type="button" class="ib-opt${sel==='نعم'?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="نعم">نعم</button>
+    <button type="button" class="ib-opt${sel==='لا'?' selected':''}" data-depth="${depth}" data-question="${escapeAttr(q)}" data-answer="لا">لا</button>`;
+}
+
+function chooseFieldBranch(key, depth, question, answer) {
+  fieldBranchPath[key] = fieldBranchPath[key].slice(0, depth);
+  fieldBranchPath[key].push({ question, answer });
+  renderFieldBranch(key);
+}
+
+function getBranchSummary(key) {
+  // Returns a readable trail + final action for storage, e.g.
+  // "نعم ← خاص ← نعم — الإجراء: استكمال رفع الدعوى على المعتدين"
+  const path = fieldBranchPath[key];
+  if (!path.length) return '';
+  const node = walkFieldTree(key);
+  const trail = path.map(s => s.answer).join(' ← ');
+  if (node && node.result !== undefined) {
+    return `${trail} — الإجراء المطلوب: ${node.result}`;
+  }
+  return trail + ' (غير مكتمل)';
+}
+
+function resetFieldBranches() {
+  Object.keys(fieldBranchPath).forEach(k => {
+    fieldBranchPath[k] = [];
+    const c = document.getElementById('branch-' + k);
+    if (c) c.innerHTML = '';
+  });
+}
+
+function saveContribution() {
+  const name = document.getElementById('f-name').value;
+  const owner = document.getElementById('f-owner').value;
+  if (!name||!owner) { alert('يرجى إدخال اسم المساهمة وصاحبها على الأقل.'); return; }
+  const c = {
+    name, owner,
+    accounting: document.getElementById('f-accounting').value,
+    legal: document.getElementById('f-legal').value,
+    responsible: document.getElementById('f-responsible').value,
+    ownership: document.getElementById('f-ownership').value,
+    subdivisionDetail: getBranchSummary('subdivision'),
+    cancelledDetail: getBranchSummary('cancelled'),
+    hasProperty: document.getElementById('f-has-property').value,
+    propertyStatus: document.getElementById('f-property-status').value,
+    survey: document.getElementById('f-survey').value,
+    surveyDetail: getBranchSummary('survey'),
+    encroach: document.getElementById('f-encroach').value,
+    encroachDetail: getBranchSummary('encroachment'),
+    overlap: document.getElementById('f-overlap').value,
+    overlapDetail: getBranchSummary('overlap'),
+    utility: document.getElementById('f-utility').value,
+    docUpdate: document.getElementById('f-doc-update').value,
+    updateBarrier: document.getElementById('f-update-barrier').value,
+    planning: document.getElementById('f-planning').value,
+    planningDetail: getBranchSummary('planning'),
+    mortgage: document.getElementById('f-mortgage').value,
+    mortgageDetail: getBranchSummary('mortgage'),
+    lawsuit: document.getElementById('f-lawsuit').value,
+    lawsuitDetail: getBranchSummary('lawsuit'),
+    order: document.getElementById('f-order').value,
+    orderDetail: getBranchSummary('promissory'),
+    orderOther: document.getElementById('f-order-other')?.value?.trim() || '',
+  };
+  contributions.push(c);
+  persist();
+  clearForm();
+  renderContributions();
+  updateStats();
+  switchTab('contributions', document.querySelectorAll('.tab-btn')[0]);
+}
+
+function clearForm() {
+  ['f-owner','f-responsible'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('name-search-input').value = '';
+  document.getElementById('name-dropdown').style.display = 'none';
+  ['f-name','f-legal','f-accounting','f-ownership','f-has-property','f-survey','f-encroach','f-overlap','f-utility','f-doc-update','f-update-barrier','f-planning','f-mortgage','f-lawsuit','f-order'].forEach(id=>document.getElementById(id).value='');
+  resetFieldBranches();
+  clearPropertyStatuses();
+  document.getElementById('group-property-status').style.display = '';
+  document.getElementById('group-update-barrier').style.display = '';
+  document.getElementById('property-dependent-section').style.display = '';
+  const cancelledBox = document.getElementById('branch-cancelled');
+  if (cancelledBox) cancelledBox.innerHTML = '';
+  const lawsuitBox = document.getElementById('branch-lawsuit');
+  if (lawsuitBox) lawsuitBox.innerHTML = '';
+  const planningBox = document.getElementById('branch-planning');
+  if (planningBox) planningBox.innerHTML = '';
+  const surveyBox = document.getElementById('branch-survey');
+  if (surveyBox) surveyBox.innerHTML = '';
+  const promissoryBox = document.getElementById('branch-promissory');
+  if (promissoryBox) promissoryBox.innerHTML = '';
+  const orderOtherWrap = document.getElementById('order-other-wrap');
+  if (orderOtherWrap) orderOtherWrap.style.display = 'none';
+  const orderOtherInput = document.getElementById('f-order-other');
+  if (orderOtherInput) orderOtherInput.value = '';
+  document.getElementById('group-ownership-row').style.display = 'none';
+}
+
+/* ═══════════ DETAIL MODAL ═══════════ */
+const LABELS = {
+  owner:'صاحب المساهمة', accounting:'التقرير المحاسبي', legal:'المستشار القانوني',
+  responsible:'الجهة المسؤولة', ownership:'ملكية الأرض', subdivisionDetail:'تفصيل مسار الفرز',
+  hasProperty:'هل يوجد عقار',
+  propertyStatus:'حالة العقار', survey:'رفع مساحي', encroach:'تعديات', encroachDetail:'تفصيل مسار التعديات',
+  overlap:'تداخل', overlapDetail:'تفصيل مسار التداخل',
+  utility:'موافقة وزارة الطاقة', docUpdate:'تحديث الوثيقة',
+  updateBarrier:'عائق التحديث',
+  planning:'تخطيط', planningDetail:'تفصيل مسار التخطيط', mortgage:'رهن على الأصل', mortgageDetail:'تفصيل مسار الرهن',
+  lawsuit:'دعوى قضائية', lawsuitDetail:'تفصيل مسار الدعوى', order:'سند لأمر', orderDetail:'تفصيل مسار سند الأمر', orderOther:'تفاصيل الحالة الأخرى'
+};
+/* ═══════════ استخراج الإجراءات المطلوبة لكل مساهمة ═══════════ */
+function extractRequiredActions(c) {
+  /*
+    ترتيب منطقي:
+    المرحلة 1 — أساسيات يجب توفرها أولاً (تسلسلي)
+    المرحلة 2 — فحص العقار والأرض (يُنفَّذ بالتوازي بعد اكتمال المرحلة 1)
+    المرحلة 3 — معالجة العوائق (تسلسلي: كل عائق يُعالَج بترتيبه)
+    المرحلة 4 — إجراءات قانونية (بعض يتوازى مع المرحلة 3)
+    المرحلة 5 — إتمام الوثائق والمتطلبات (تسلسلي: بعد حل العوائق)
+  */
+
+  const phases = [];
+
+  /* ── المرحلة 1: الأساسيات ── */
+  const phase1 = [];
+  if (c.accounting === 'غير متوفر')
+    phase1.push({ source:'التقرير المحاسبي', text:'البدء في إعداد التقرير المحاسبي — لا يمكن المتابعة دون توفره' });
+  else if (c.accounting === 'قيد الإعداد')
+    phase1.push({ source:'التقرير المحاسبي', text:'متابعة استكمال إعداد التقرير المحاسبي' });
+  if (c.legal === '' || !c.legal)
+    phase1.push({ source:'المستشار القانوني', text:'تعيين مستشار قانوني للمساهمة' });
+  if (phase1.length)
+    phases.push({ type:'sequential', label:'أولاً — متطلبات أساسية', note:'يجب إنجازها قبل أي خطوة أخرى', items: phase1 });
+
+  /* ── المرحلة 2: فحص العقار (يتوازى) ── */
+  const phase2 = [];
+  if (c.hasProperty === 'نعم') {
+    const psVal = c.propertyStatus || '';
+    const hasملغى     = psVal.includes('ملغى');
+    const hasمنزوع    = psVal.includes('منزوع') && !psVal.includes('منزوع جزئياً');
+    const hasجزئي     = psVal.includes('منزوع جزئياً');
+    const hasمباع     = psVal.includes('مباع');
+    const fullyDoneWithProp = (hasمنزوع && !hasجزئي) || hasمباع;
+
+    if (c.survey === 'لا' && !fullyDoneWithProp) {
+      phase2.push({ source:'الرفع المساحي', text:'استكمال الرفع المساحي للعقار — شرط لكشف التعديات والتداخلات' });
+    } else if (c.survey === 'نعم' && c.surveyDetail && c.surveyDetail.includes('الإجراء المطلوب:')) {
+      const sAct = c.surveyDetail.split('الإجراء المطلوب:')[1].trim();
+      if (sAct && !sAct.includes('✓') && !sAct.includes('لا حاجة')) {
+        phase2.push({ source:'الرفع المساحي', text: sAct });
+      }
+    }
+
+    if (hasملغى && c.cancelledDetail) {
+      const act = c.cancelledDetail.includes('الإجراء المطلوب:') ? c.cancelledDetail.split('الإجراء المطلوب:')[1].trim() : c.cancelledDetail;
+      if (act && !act.includes('غير مكتمل')) phase2.push({ source:'الصك الملغى', text: act });
+      else phase2.push({ source:'الصك الملغى', text:'يرجى استكمال إجابات مسار الصك الملغى للحصول على الإجراء المطلوب' });
+    } else if (hasملغى && !c.cancelledDetail) {
+      phase2.push({ source:'الصك الملغى', text:'استكمال إجابات مسار الصك الملغى (هل أُحيل للفريق؟)' });
+    }
+    if (hasمنزوع) {
+      phase2.push({ source:'العقار منزوع', text:'التحقق من استكمال إجراءات النزع وصرف التعويض للمساهمين' });
+    }
+    if (hasجزئي) {
+      phase2.push({ source:'نزع جزئي', text:'تحديد الأجزاء المنزوعة وغير المنزوعة واستكمال إجراءات التعويض عن الجزء المنزوع' });
+    }
+    if (c.docUpdate === 'نعم')
+      phase2.push({ source:'تحديث الوثيقة', text: c.updateBarrier ? `استكمال تحديث الوثيقة — العائق: ${c.updateBarrier}` : 'استكمال تحديث الوثيقة' });
+  }
+  if (phase2.length)
+    phases.push({ type:'parallel', label:'ثانياً — فحص العقار والوثائق', note:'تُنفَّذ بالتوازي', items: phase2 });
+
+  /* ── المرحلة 3: معالجة العوائق الميدانية (تسلسلي) ── */
+  const phase3 = [];
+  if (c.hasProperty === 'نعم') {
+    // التعديات قبل التداخل لأن حلها يُوضح الحدود الفعلية
+    if (c.encroachDetail) {
+      const act = c.encroachDetail.includes('الإجراء المطلوب:') ? c.encroachDetail.split('الإجراء المطلوب:')[1].trim() : c.encroachDetail;
+      if (act) phase3.push({ source:'التعديات', text: act, note:'يُنفَّذ أولاً: تحديد الحدود قبل رصد التداخل' });
+    }
+    if (c.overlapDetail) {
+      const act = c.overlapDetail.includes('الإجراء المطلوب:') ? c.overlapDetail.split('الإجراء المطلوب:')[1].trim() : c.overlapDetail;
+      if (act) phase3.push({ source:'التداخل', text: act, note:'بعد حل التعديات أو بالتوازي إن كانت مستقلة' });
+    }
+    if (c.mortgage === 'نعم' && c.mortgageDetail) {
+      const act = c.mortgageDetail.includes('الإجراء المطلوب:') ? c.mortgageDetail.split('الإجراء المطلوب:')[1].trim() : c.mortgageDetail;
+      if (act && !act.includes('غير مكتمل')) phase3.push({ source:'الرهن', text: act, note:'يُعالَج موازياً مع التعديات والتداخل' });
+      else if (act && act.includes('غير مكتمل')) phase3.push({ source:'الرهن', text:'يرجى استكمال إجابات مسار الرهن للحصول على الإجراء المطلوب', note:'يُعالَج موازياً مع التعديات والتداخل' });
+    }
+  }
+  if (phase3.length)
+    phases.push({ type:'mixed', label:'ثالثاً — معالجة العوائق الميدانية', note:'ترتيب التنفيذ مبيَّن لكل بند', items: phase3 });
+
+  /* ── المرحلة 4: الإجراءات القانونية (تسلسلي/توازي) ── */
+  const phase4 = [];
+  if (c.lawsuit === 'نعم')
+    phase4.push({ source:'الدعوى القضائية', text:'متابعة سير الدعوى القضائية القائمة', note:'تُتابَع بالتوازي مع كل المراحل' });
+  if (c.order === 'نعم') {
+    let orderText = 'معالجة سند الأمر القائم على المساهمة';
+    if (c.orderDetail && c.orderDetail.includes('الإجراء المطلوب:')) {
+      const extracted = c.orderDetail.split('الإجراء المطلوب:')[1].trim();
+      if (extracted && !extracted.includes('غير مكتمل')) {
+        orderText = extracted === '__OTHER__' && c.orderOther ? c.orderOther : extracted;
+      }
+    }
+    phase4.push({ source:'سند لأمر', text: orderText, note:'يُعالَج قبل أي إجراء بيع أو نقل ملكية' });
+  }
+  if (phase4.length)
+    phases.push({ type:'parallel', label:'رابعاً — الإجراءات القانونية', note:'تسير بالتوازي مع المراحل الأخرى', items: phase4 });
+
+  /* ── المرحلة 5: التهيئة النهائية (تسلسلي: بعد حل العوائق) ── */
+  const phase5 = [];
+  if (c.hasProperty === 'نعم') {
+    if (c.utility && c.utility !== 'معتمدة')
+      phase5.push({ source:'موافقة وزارة الطاقة', text: c.utility === 'قيد الاعتماد' ? 'متابعة استكمال موافقة وزارة الطاقة' : 'تقديم طلب موافقة وزارة الطاقة' });
+    if (c.planning === 'نعم') {
+      let planningText = 'استكمال إجراءات تخطيط الأرض';
+      if (c.planningDetail && c.planningDetail.includes('الإجراء المطلوب:')) {
+        const pAct = c.planningDetail.split('الإجراء المطلوب:')[1].trim();
+        if (pAct && !pAct.includes('غير مكتمل')) planningText = pAct;
+      }
+      phase5.push({ source:'التخطيط', text: planningText, note:'يتوقف على اكتمال الرفع المساحي وحل التداخلات' });
+    }
+    if (c.ownership === 'مشاع' && c.subdivisionDetail) {
+      const act = c.subdivisionDetail.includes('الإجراء المطلوب:') ? c.subdivisionDetail.split('الإجراء المطلوب:')[1].trim() : c.subdivisionDetail;
+      if (act) phase5.push({ source:'الفرز', text: act, note:'بعد اكتمال التخطيط والوثائق' });
+    }
+  }
+  if (phase5.length)
+    phases.push({ type:'sequential', label:'خامساً — التهيئة النهائية للتصرف', note:'تتوقف على اكتمال المراحل السابقة', items: phase5 });
+
+  return phases;
+}
+
+function renderRequiredActionsHTML(c) {
+  const phases = extractRequiredActions(c);
+  const totalItems = phases.reduce((sum,p) => sum + p.items.length, 0);
+
+  if (!totalItems) {
+    return `<div class="ib-result" style="margin-bottom:16px">
+      <div class="ib-result-label">الإجراءات المطلوبة</div>
+      <div class="ib-result-text">لا توجد إجراءات معلّقة — جميع البنود مكتملة وفق البيانات المُدخلة ✓</div>
+    </div>`;
+  }
+
+  const typeStyle = {
+    sequential: { bg:'#fef3c7', border:'#fcd34d', badge:'تسلسلي', badgeColor:'#92400e', badgeBg:'#fde68a', icon:'↓' },
+    parallel:   { bg:'#eff4ff', border:'#bfcffe', badge:'بالتوازي', badgeColor:'#1e40af', badgeBg:'#dbeafe', icon:'⇉' },
+    mixed:      { bg:'#f0fdf4', border:'#bbf7d0', badge:'مختلط', badgeColor:'#14532d', badgeBg:'#dcfce7', icon:'⇄' },
+  };
+
+  const phasesHTML = phases.map((ph, pi) => {
+    const st = typeStyle[ph.type] || typeStyle.sequential;
+    const itemsHTML = ph.items.map((item, ii) => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:#fff;border-radius:8px;border:1px solid ${st.border};">
+        <span style="width:22px;height:22px;min-width:22px;background:${st.badgeBg};color:${st.badgeColor};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">${toAr(ii+1)}</span>
+        <div style="flex:1">
+          <div style="font-size:12.5px;font-weight:700;color:${st.badgeColor};margin-bottom:2px">${escapeHTML(item.source)}</div>
+          <div style="font-size:12.5px;color:#374151;line-height:1.7">${escapeHTML(item.text)}</div>
+          ${item.note ? `<div style="font-size:11px;color:#6b7280;margin-top:3px;font-style:italic">↳ ${escapeHTML(item.note)}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:${st.badgeColor}">${escapeHTML(ph.label)}</span>
+        <span style="font-size:10px;background:${st.badgeBg};color:${st.badgeColor};border-radius:20px;padding:2px 8px;font-weight:700">${st.icon} ${st.badge}</span>
+        ${ph.note ? `<span style="font-size:10.5px;color:#9ca3af">— ${escapeHTML(ph.note)}</span>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding-right:8px;border-right:3px solid ${st.border}">
+        ${itemsHTML}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:16px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px">⚡ الإجراءات المطلوب تنفيذها</span>
+      <span style="font-size:11px;background:#fde68a;color:#92400e;border-radius:20px;padding:2px 10px;font-weight:700">${toAr(totalItems)} إجراء في ${toAr(phases.length)} مراحل</span>
+    </div>
+    ${phasesHTML}
+  </div>`;
+}
+
+
+let currentDetailIndex = null;
+function viewDetail(i) {
+  currentDetailIndex = i;
+  const c = contributions[i];
+  document.getElementById('modal-title').textContent = c.name;
+
+  const actionsHTML = renderRequiredActionsHTML(c);
+  const detailsHTML = Object.entries(LABELS).map(([k,label])=>
+    c[k] ? `<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+      <span style="color:var(--muted)">${label}</span><span style="font-weight:600">${c[k]}</span></div>` : ''
+  ).join('');
+
+  document.getElementById('modal-content').innerHTML = actionsHTML + detailsHTML;
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('detail-modal').classList.remove('open'); }
+
+function deleteContribution() {
+  const c = contributions[currentDetailIndex];
+  if (!confirm(`هل أنت متأكد من حذف مساهمة "${c.name}"؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+  contributions.splice(currentDetailIndex, 1);
+  localStorage.setItem('contributions_list', JSON.stringify(contributions));
+  renderContributions();
+  updateStats();
+  closeModal();
+  showToast('🗑 تم حذف المساهمة');
+}
+
+/* ═══════════ EDIT CONTRIBUTION ═══════════ */
+let editingIndex = null;
+
+function openEditModal() {
+  const i = currentDetailIndex;
+  if (i === null || i === undefined) return;
+  editingIndex = i;
+  const c = contributions[i];
+  document.getElementById('edit-modal-title').textContent = 'تعديل — ' + c.name;
+
+  // Build edit form with all fields pre-filled
+  document.getElementById('edit-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>اسم المساهمة</label>
+        <div style="padding:9px 12px;background:var(--gray-bg);border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--muted)">${c.name}</div>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>صاحب المساهمة</label>
+        <div style="padding:9px 12px;background:var(--gray-bg);border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--muted)">${c.owner}</div>
+      </div>
+
+      <div class="form-group">
+        <label>التقرير المحاسبي</label>
+        <select id="e-accounting">
+          <option value="">— اختر —</option>
+          ${['متوفر','قيد الإعداد','غير متوفر'].map(v=>`<option ${c.accounting===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>المستشار القانوني</label>
+        <select id="e-legal">
+          <option value="">— اختر —</option>
+          <option ${c.legal==="علي التميمي"?'selected':''}>علي التميمي</option>
+          <option ${c.legal==="فهد الخميش"?'selected':''}>فهد الخميش</option>
+          <option ${c.legal==="إبراهيم العريفي"?'selected':''}>إبراهيم العريفي</option>
+          <option ${c.legal==="سوسن القاضي"?'selected':''}>سوسن القاضي</option>
+          <option ${c.legal==="إبراهيم الراجحي"?'selected':''}>إبراهيم الراجحي</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>الجهة المسؤولة عن المرحلة الحالية</label>
+        <select id="e-responsible">
+          <option value="">— اختر —</option>
+          ${['مساهمات مهيأة للإفراغ','جهات أخرى "هيئة عقارات الدولة"','وزارة البلديات و الإسكان','مساهمات مهيأة للبيع','النظر القضائي','تحت إجراءات الإلزام','وكالة التوثيق (الوكالة – كتابات العدل – إجراءات تحديث أو استخراج الصكوك)','فريق العمل الدائم لمعالجة الصكوك الموقوفة والملغاة','الديوان الملكي','منصة إحكام','تمت التصفية والمساهمة تحت إجراء الصرف','جهات أخرى "الهيئة الملكية لمدينة الرياض ،وأمانة الرياض، ووزارة الرياضة"','جهات أخرى "إيقاف شمال الرياض"','جهات أخرى (بنك الراجحي)','تحت التهيئة','تحت إجراءات إعداد التقارير المحاسبية'].map(v=>`<option ${c.responsible===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل يوجد عقار</label>
+        <select id="e-hasProperty">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.hasProperty===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>حالة العقار الحالية</label>
+        <div style="padding:9px 12px;background:var(--gray-bg);border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--muted);line-height:1.8">${
+          (c.propertyStatus||'غير محدد').split(' | ').map(s=>`<span class="mps-tag ${s.includes('ملغى')?'cancelled-tag':''}">${s}</span>`).join('')
+        }</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">لتعديل حالة العقار أغلق هذه النافذة وعدّل المساهمة من نموذج الإضافة</div>
+      </div>
+
+      <div class="form-group">
+        <label>ملكية الأرض</label>
+        <select id="e-ownership">
+          <option value="">— اختر —</option>
+          ${['كاملة','مشاع','متنازع عليها'].map(v=>`<option ${c.ownership===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل يوجد رفع مساحي</label>
+        <select id="e-survey">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.survey===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل توجد تعديات</label>
+        <select id="e-encroach">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.encroach===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل يوجد تداخل</label>
+        <select id="e-overlap">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.overlap===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>موافقة وزارة الطاقة</label>
+        <select id="e-utility">
+          <option value="">— اختر —</option>
+          ${['معتمدة','قيد الاعتماد','لم تُقدَّم'].map(v=>`<option ${c.utility===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل تحتاج الوثيقة تحديث</label>
+        <select id="e-docUpdate">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.docUpdate===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>عائق التحديث</label>
+        <select id="e-updateBarrier">
+          <option value="">— اختر —</option>
+          ${['جارى العمل على الرفع عن طريق منصة بلدي عن طريق المصفي والمتابعة معه','جاري المتابعة مع المصفي لتعين مكتب هندسي لاستكمال اجراءات الفرز والتحديث حيث أن المساهمة عبارة عن عمارة قديمة','تحت الدراسة','عدم استكمال هويات الملاك، وادعاء تملك المساهمة اكثر من النسبة المدرجة بالصك','الصك لم يستكمل المتطلبات النظامية','بعض قطع الصك لم تصدر لها صكوك مستقلة','إحكام','ملغى ويدرس لدى الفريق','الصك ملغى','مباع','يحتاج إلى تحديد القطع المتبقية في الصك','ضمن منطقة الايقاف','وجود تداخل وتم رفع دعوى قضائية ولم يتم الانتهاء حتى الان','لابد من استكمال متطلبات الصك والتخطيط','منصة إحكام','لم يتم التحديث من قبل وكالة التوثيق'].map(v=>`<option ${c.updateBarrier===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل الأرض بحاجة تخطيط</label>
+        <select id="e-planning">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.planning===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل يوجد رهن على الأصل</label>
+        <select id="e-mortgage">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.mortgage===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل توجد دعوى قضائية</label>
+        <select id="e-lawsuit">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.lawsuit===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>هل يوجد سند لأمر</label>
+        <select id="e-order">
+          <option value="">— اختر —</option>
+          ${['نعم','لا'].map(v=>`<option ${c.order===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+    </div>`;
+
+  document.getElementById('detail-modal').classList.remove('open');
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function saveEdit() {
+  const c = contributions[editingIndex];
+  const get = id => document.getElementById(id)?.value || '';
+
+  contributions[editingIndex] = {
+    ...c,
+    accounting:    get('e-accounting'),
+    legal:         get('e-legal'),
+    responsible:   get('e-responsible'),
+    hasProperty:   get('e-hasProperty'),
+    propertyStatus:get('e-propertyStatus'),
+    ownership:     get('e-ownership'),
+    survey:        get('e-survey'),
+    encroach:      get('e-encroach'),
+    overlap:       get('e-overlap'),
+    utility:       get('e-utility'),
+    docUpdate:     get('e-docUpdate'),
+    updateBarrier: get('e-updateBarrier'),
+    planning:      get('e-planning'),
+    mortgage:      get('e-mortgage'),
+    lawsuit:       get('e-lawsuit'),
+    order:         get('e-order'),
+    // Clear branch summaries so they get recalculated on next view
+    encroachDetail:  '',
+    overlapDetail:   '',
+    mortgageDetail:  '',
+    subdivisionDetail: '',
+  };
+
+  localStorage.setItem('contributions_list', JSON.stringify(contributions));
+  renderContributions();
+  updateStats();
+  closeEditModal();
+  viewDetail(editingIndex);
+  showToast('✓ تم حفظ التعديلات');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('app-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'app-toast';
+    t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1d23;color:#fff;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:500;z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+/* ═══════════ USERS MODAL ═══════════ */
+function renderUsers() {
+  document.getElementById('users-list').innerHTML = users.map((u,i)=>`
+    <div class="user-table-row">
+      <span style="font-weight:600">${u.name}</span>
+      <span style="color:var(--muted)">${u.role}</span>
+      <span><span class="badge badge-green">${u.status}</span></span>
+      <span style="display:flex;gap:6px;justify-content:flex-start">
+        <button class="btn-ghost" style="padding:4px 10px;font-size:11px" onclick="resetUser(${i})">إعادة تعيين</button>
+      </span>
+    </div>`).join('');
+}
+function openUsersModal() { renderUsers(); document.getElementById('users-modal').classList.add('open'); }
+function closeUsersModal() { document.getElementById('users-modal').classList.remove('open'); }
+function addUser() {
+  const name = prompt('اسم الموظف الجديد:');
+  if (name) { users.push({name, role:'موظف', status:'بانتظار أول دخول'}); renderUsers(); }
+}
+function resetUser(i) { users[i].status = 'بانتظار أول دخول'; renderUsers(); }
+
+/* ═══════════ TABS ═══════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function switchProcessSubTab(id, btn) {
+  document.getElementById('process-main').style.display = id==='main' ? 'block':'none';
+  document.getElementById('process-sub').style.display  = id==='sub'  ? 'block':'none';
+  document.querySelectorAll('.process-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ═══════════ PROCESS STEPS ═══════════ */
+function renderProcessSteps() {
+  document.getElementById('process-steps').innerHTML = PROCESS_STEPS.map((s,i)=>`
+    <div class="process-step">
+      <div class="step-num">${toAr(i+1)}</div>
+      <div class="step-body"><h4>${s.title}</h4><p>${s.desc}</p></div>
+    </div>`).join('');
+}
+
+/* ═══════════ DECISION TREES ═══════════ */
+const treeState = {}; // key -> path array
+
+function renderDecisionTrees() {
+  const grid = document.getElementById('dtree-grid');
+  grid.innerHTML = Object.keys(DECISION_TREES).map(key => {
+    treeState[key] = treeState[key] || [];
+    return `<div class="dtree" id="dtree-${key}"></div>`;
+  }).join('');
+  Object.keys(DECISION_TREES).forEach(key => renderTree(key));
+}
+
+function walkTree(key) {
+  const tree = DECISION_TREES[key];
+  let node = tree.root;
+  for (const step of treeState[key]) {
+    if (node.branches) node = node.branches[step.answer];
+    else node = step.answer === 'نعم' ? node.yes : node.no;
+  }
+  return node;
+}
+
+function renderTree(key) {
+  const tree = DECISION_TREES[key];
+  const path = treeState[key];
+  const node = walkTree(key);
+  const isLeaf = node && node.result !== undefined;
+  const el = document.getElementById('dtree-' + key);
+
+  let breadcrumbHTML = '';
+  if (path.length) {
+    breadcrumbHTML = `<div class="dtree-breadcrumb show">${
+      path.map((s,i)=>`<span class="dtree-crumb">${s.question} <strong>${s.answer}</strong>${i<path.length-1?' ← ':''}</span>`).join('')
+    }</div>`;
+  }
+
+  let questionHTML = '';
+  if (!isLeaf && node && node.q) {
+    let optionsHTML = '';
+    if (node.branches) {
+      optionsHTML = Object.keys(node.branches).map(label =>
+        `<button class="dtree-opt" onclick="chooseTreeOption('${key}','${node.q.replace(/'/g,"\\'")}','${label}')">${label}</button>`
+      ).join('');
+    } else {
+      optionsHTML = `
+        <button class="dtree-opt yes" onclick="chooseTreeOption('${key}','${node.q.replace(/'/g,"\\'")}','نعم')">نعم</button>
+        <button class="dtree-opt no" onclick="chooseTreeOption('${key}','${node.q.replace(/'/g,"\\'")}','لا')">لا</button>`;
+    }
+    questionHTML = `<div class="dtree-question-box"><div class="dtree-question">${node.q}</div><div class="dtree-options">${optionsHTML}</div></div>`;
+  }
+
+  let resultHTML = '';
+  if (isLeaf) {
+    resultHTML = `<div class="dtree-result-box show"><div class="dtree-result-label">الإجراء المطلوب</div><div class="dtree-result-text">${node.result}</div></div>`;
+  }
+
+  el.innerHTML = `
+    <div class="dtree-head">
+      <span class="dtree-icon">${tree.icon}</span>
+      <div><div class="dtree-title">${tree.title}</div><div class="dtree-desc">${tree.desc}</div></div>
+    </div>
+    ${breadcrumbHTML}
+    ${questionHTML}
+    ${resultHTML}
+    <div class="dtree-controls">
+      <button class="dtree-btn-back ${path.length?'show':''}" onclick="backTree('${key}')">↩ رجوع خطوة</button>
+      <button class="dtree-btn-reset ${path.length?'show':''}" onclick="resetTree('${key}')">إعادة البدء</button>
+    </div>`;
+}
+
+function chooseTreeOption(key, question, answer) {
+  treeState[key].push({question, answer});
+  renderTree(key);
+}
+function backTree(key) { treeState[key].pop(); renderTree(key); }
+function resetTree(key) { treeState[key] = []; renderTree(key); }
+
+/* close modals on backdrop click */
+document.querySelectorAll('.modal-overlay').forEach(o=>
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); })
+);
+</script>
+</body>
+</html>
